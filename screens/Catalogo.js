@@ -127,8 +127,18 @@ function TelaListaDeCamisas({ navigation }) {
         : camisas.filter(c => c.time === timeSelecionado);
 
     const abrirDetalhesCamisa = (camisa) => {
+        // normaliza dados para evitar undefined / espaços nas URLs
+        const produtoNormalizado = {
+            ...camisa,
+            imagem: (camisa.imagem || '').trim(),
+            descricao: camisa.descricao || 'Descrição não disponível.',
+            categoria: camisa.categoria || 'Camiseta de time',
+            estoque: typeof camisa.estoque === 'number' ? camisa.estoque : 0,
+            avaliacoes: camisa.avaliacoes || 0,
+        };
+
         navigation.navigate('DetalhesCamisas', {
-            camisaSelecionada: camisa,
+            produtoSelecionado: produtoNormalizado,
             origemNavegacao: 'lista_camisas',
             timestampVisita: Date.now()
         });
