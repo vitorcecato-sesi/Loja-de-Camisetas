@@ -159,7 +159,7 @@ function TelaListaDeCamisas({ navigation }) {
             <>
                 <StatusBar
                     barStyle={Platform.OS === 'ios' ? 'dark-content' : 'light-content'}
-                    backgroundColor={Platform.OS === 'android' ? '#007AFF' : 'transparent'}
+                    backgroundColor={Platform.OS === 'android' ? 'transparent' : 'transparent'}
                     translucent={Platform.OS === 'android'}
                 />
                 <View style={estilos.loadingContainer}>

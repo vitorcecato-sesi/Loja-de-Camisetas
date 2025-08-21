@@ -1,6 +1,6 @@
 // ...existing code...
 import React, { useState, useEffect } from 'react'
-import { View, Text, Image, TouchableOpacity, StyleSheet, Alert } from 'react-native'
+import { View, Text, Image, TouchableOpacity, StyleSheet, Alert, ScrollView } from 'react-native'
 
 function ListaDetalhesProdutos({ route, navigation }) {
     const { produtoSelecionado } = route.params || {}
@@ -41,7 +41,7 @@ function ListaDetalhesProdutos({ route, navigation }) {
     const imagemUri = (produtoSelecionado.imagem).trim()
 
     return (
-        <View style={estilos.container}>
+        <ScrollView style={estilos.container}>
 
             <TouchableOpacity style={estilos.botaoVoltar} onPress={() => navigation.goBack()}>
                 <Text style={estilos.textoVoltar}> Voltar </Text>
@@ -85,7 +85,7 @@ function ListaDetalhesProdutos({ route, navigation }) {
                 <Text style={estilos.textoBotaoComprar}> Adicionar ao Carrinho </Text>
             </TouchableOpacity>
 
-        </View>
+        </ScrollView>
     )
 }
 
@@ -116,7 +116,7 @@ const estilos = StyleSheet.create({
     },
     imagemGrande: {
         width: '100%',
-        height: 260,
+        height: 360,
         borderRadius: 16,
         resizeMode: 'cover',
         marginBottom: 18,
