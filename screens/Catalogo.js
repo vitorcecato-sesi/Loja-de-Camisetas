@@ -1,13 +1,24 @@
-import React from 'react';
-import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet, Alert } from 'react-native';
+import React,{ useState } from 'react';
+import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet, Alert, RefreshControl, Dimensions } from 'react-native';
+
+const { width, height } = Dimensions.get('window');
 
 function TelaListaDeCamisas({ navigation }) {
+    const [refreshing, setRefreshing] = useState(false);
+
+     const onRefresh = () => {
+        setRefreshing(true);
+        setTimeout(() => {
+            setRefreshing(false);
+        }, 500); // tempo curto só para mostrar o efeito de refresh
+    };
+
     const camisas = [
         {
             id: 1,
             nome: 'Camisa Mirassol',
             preco: 249.99,
-            imagem: ' https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgy05GWcIrMmRYRd5DceIE1FcuRdxpa4vVPWmFnrhOoLC7wpQknIsPeKUp2lO9ILOlrmBtNAKrmjsHPidyOzKdmkT0zVTpELm_wPk3V4U1y9adLRGVdhFHiOmBebsIFCFR2tZhdjt0lUSTP/s1600/Mirassol+2020+1.png',
+            imagem: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgy05GWcIrMmRYRd5DceIE1FcuRdxpa4vVPWmFnrhOoLC7wpQknIsPeKUp2lO9ILOlrmBtNAKrmjsHPidyOzKdmkT0zVTpELm_wPk3V4U1y9adLRGVdhFHiOmBebsIFCFR2tZhdjt0lUSTP/s1600/Mirassol+2020+1.png',
             descricao: 'Camisa do Mirassol: amarela vibrante com detalhes verdes e o leão no escudo destacando a identidade do clube',
             estoque: 15,
           
@@ -34,9 +45,9 @@ function TelaListaDeCamisas({ navigation }) {
             id: 4,
             nome: 'Camisa Grêmio',
             preco: 199.99,
-            imagem: ' https://gremio1903.wordpress.com/wp-content/uploads/2011/01/grc3aamiofrente.png?w=584',
+            imagem: 'https://gremio1903.wordpress.com/wp-content/uploads/2011/01/grc3aamiofrente.png?w=584',
             descricao: 'Camisa do Grêmio: listrada em azul, preto e branco, com o escudo tricolor centralizado no peito.',
-            estoque: 30,
+            estoque: 32,
        
         },
          {
@@ -45,7 +56,7 @@ function TelaListaDeCamisas({ navigation }) {
             preco: 599.99,
             imagem: 'https://webshop.vteximg.com.br/arquivos/ids/213214-1000-1000/M_0105_00200632002.png?v=638579612893500000',
             descricao: ' Camisa do Vasco: preta com detalhes em branco e o icônico escudo cruzmaltino, simbolizando tradição e paixão.',
-            estoque: 30,
+            estoque: 28,
     
         },
         {
@@ -54,7 +65,7 @@ function TelaListaDeCamisas({ navigation }) {
             preco: 159.99,
             imagem: 'https://dasports.com.br/cdn/shop/files/Santos-Comemorativa_24_25_1_1024x.png?v=1749439987',
             descricao: ' Camisa do Santos: branca com detalhes em preto e o escudo do peixe, representando a história e a tradição do clube.',
-            estoque: 8,
+            estoque: 18,
          
         },
         {
@@ -63,7 +74,7 @@ function TelaListaDeCamisas({ navigation }) {
             preco: 1.99,
             imagem: 'https://www.futebolreligiao.com.br/image/cache/catalog/Corinthians/Camisa%20III%20Corinthians%202024%20Third-900x900.png',
             descricao: '    Camisa do Corinthians: branca com detalhes em preto e o famoso escudo alvinegro, simbolizando a força e a paixão da torcida.',
-            estoque: 8,
+            estoque: 10,
         
         },
         {
@@ -72,7 +83,7 @@ function TelaListaDeCamisas({ navigation }) {
             preco: 292.99,
             imagem: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjWOxai7wqz-fesnAPAWMRIwR_GHFB8s-RCRwa23okJ3JTeM9Jypbu6O4k32WBTsWTz3x6TaJ-A_V2lehjeLKdIySZufs7nBha454QSiisxd5VV1FDXtDKFVlWyi-kxJtVxL9DUT3P20e8/s1600/Bahia+2014+2.png',
             descricao: ' Camisa do Bahia: azul e vermelho com listras horizontais, destacando o escudo tricolor e a tradição do clube baiano.',
-            estoque: 8,
+            estoque: 11,
             
         },
         {
@@ -81,7 +92,7 @@ function TelaListaDeCamisas({ navigation }) {
             preco: 250.00,
             imagem: 'https://fluminense.vteximg.com.br/arquivos/ids/158648-1000-1000/FPON9VgXsAAiUqm-removebg-preview.png?v=637844182303130000',
             descricao: ' Camisa do Fluminense: verde, branco e grená com listras verticais, destacando o escudo tricolor e a história do clube carioca.',
-            estoque: 8,
+            estoque: 15,
        
         },
         {
@@ -109,13 +120,12 @@ function TelaListaDeCamisas({ navigation }) {
             <View style={estilos.infoCamisa}>
                 <Text style={estilos.nomeCamisa}>{item.nome}</Text>
                 <Text style={estilos.precoCamisa}>R$ {item.preco.toFixed(2)}</Text>
-                
-              
             </View>
         </TouchableOpacity>
     );
 
     return (
+<>
         <View style={estilos.container}>
             <Text style={estilos.titulo}>Catálogo de Camisas</Text>
             <FlatList
@@ -125,8 +135,19 @@ function TelaListaDeCamisas({ navigation }) {
                 numColumns={2}
                 showsVerticalScrollIndicator={false}
                 columnWrapperStyle={estilos.linhaCamisas}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={refreshing}
+                        onRefresh={onRefresh}
+                        colors={['#007AFF']}
+                        tintColor="#007AFF"
+                        title="Atualizando catálogo..."
+                    />
+                }
             />
         </View>
+    </>
+    
     );
 }
 
@@ -158,11 +179,11 @@ const estilos = StyleSheet.create({
         elevation: 2,
     },
     imagemCamisa: {
-        width: '100%',
-        height: 100,
+        width: width * 0.4,
+        height: height * 0.2,
         borderRadius: 8,
         marginBottom: 10,
-        backgroundColor: '#eee',
+        backgroundColor: 'white',
     },
     infoCamisa: {
         alignItems: 'center',
@@ -178,5 +199,4 @@ const estilos = StyleSheet.create({
         color: '#27ae60',
         marginTop: 4,
     },
-   
 });
