@@ -96,23 +96,36 @@ function TelaListaDeCamisas({ navigation }) {
     ];
 
     const abrirDetalhesCamisa = (camisa) => {
+        // normaliza dados para evitar undefined / espaços nas URLs
+        const produtoNormalizado = {
+            ...camisa,
+            imagem: (camisa.imagem || '').trim(),
+            descricao: camisa.descricao || 'Descrição não disponível.',
+            categoria: camisa.categoria || 'Camiseta de time',
+            estoque: typeof camisa.estoque === 'number' ? camisa.estoque : 0,
+            avaliacoes: camisa.avaliacoes || 0,
+        };
+
         navigation.navigate('DetalhesCamisas', {
-            camisaSelecionada: camisa,
+            produtoSelecionado: produtoNormalizado,
             origemNavegacao: 'lista_camisas',
             timestampVisita: Date.now()
         });
     };
 
-    const renderizarCamisa = ({ item }) => (
-        <TouchableOpacity style={estilos.cardCamisa} onPress={() => abrirDetalhesCamisa(item)}>
-            <Image source={{ uri: item.imagem || 'https://via.placeholder.com/150' }} style={estilos.imagemCamisa} />
-            <View style={estilos.infoCamisa}>
-                <Text style={estilos.nomeCamisa}>{item.nome}</Text>
-                <Text style={estilos.precoCamisa}>R$ {item.preco.toFixed(2)}</Text>
-                <Text style={estilos.avaliacaoCamisa}>⭐ {item.avaliacoes}</Text>
-            </View>
-        </TouchableOpacity>
-    );
+    const renderizarCamisa = ({ item }) => {
+        const uri = (item.imagem || '').trim() || 'https://via.placeholder.com/150';
+        return (
+            <TouchableOpacity style={estilos.cardCamisa} onPress={() => abrirDetalhesCamisa(item)}>
+                <Image source={{ uri }} style={estilos.imagemCamisa} />
+                <View style={estilos.infoCamisa}>
+                    <Text style={estilos.nomeCamisa}>{item.nome}</Text>
+                    <Text style={estilos.precoCamisa}>R$ {item.preco.toFixed(2)}</Text>
+                    <Text style={estilos.avaliacaoCamisa}>⭐ {item.avaliacoes}</Text>
+                </View>
+            </TouchableOpacity>
+        );
+    };
 
     return (
         <View style={estilos.container}>
