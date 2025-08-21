@@ -54,7 +54,7 @@ function TelaLogin({ navigation }) {
     // Simula um atraso de 3 segundos antes de navegar
     setTimeout(() => {
       setCarregando(false);
-      navigation.navigate('TelaListaProdutos'); // Navega para a próxima tela
+      navigation.navigate('Catalogo'); // Navega para a próxima tela
     }, 3000); 
   }
 
