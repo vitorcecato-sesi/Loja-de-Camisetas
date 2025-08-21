@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet, RefreshControl, Dimensions, StatusBar, Platform, ActivityIndicator } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet, RefreshControl, Dimensions, StatusBar, Platform, ActivityIndicator, SafeAreaView } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 
 const { width, height } = Dimensions.get('window');
@@ -163,7 +163,7 @@ function TelaListaDeCamisas({ navigation }) {
                     translucent={Platform.OS === 'android'}
                 />
                 <View style={estilos.loadingContainer}>
-                    <ActivityIndicator size="large" color="#007AFF" />
+                    <ActivityIndicator size="large" color="#6366f1" />
                     <Text style={estilos.loadingText}>Carregando catálogo...</Text>
                 </View>
             </>
@@ -171,10 +171,10 @@ function TelaListaDeCamisas({ navigation }) {
     }
 
     return (
-        <>
+        <SafeAreaView style={{ flex: 1, backgroundColor: '#f5f5f5' }}>
             <StatusBar
                 barStyle={Platform.OS === 'ios' ? 'dark-content' : 'light-content'}
-                backgroundColor={Platform.OS === 'android' ? '#007AFF' : 'transparent'}
+                backgroundColor={Platform.OS === 'android' ? '#6366f1' : 'transparent'}
                 translucent={Platform.OS === 'android'}
             />
             <View style={estilos.statusBarFalsa} />
@@ -187,7 +187,7 @@ function TelaListaDeCamisas({ navigation }) {
                         style={estilos.picker}
                         onValueChange={(itemValue) => setTimeSelecionado(itemValue)}
                         mode="dropdown"
-                        dropdownIconColor="#007AFF"
+                        dropdownIconColor="#6366f1"
                     >
                         {times.map((time, idx) => (
                             <Picker.Item key={idx} label={time.charAt(0).toUpperCase() + time.slice(1)} value={time} />
@@ -205,8 +205,8 @@ function TelaListaDeCamisas({ navigation }) {
                         <RefreshControl
                             refreshing={refreshing}
                             onRefresh={onRefresh}
-                            colors={['#007AFF']}
-                            tintColor="#007AFF"
+                            colors={['#6366f1']}
+                            tintColor="#6366f1"
                             title="Atualizando catálogo..."
                         />
                     }
@@ -215,17 +215,13 @@ function TelaListaDeCamisas({ navigation }) {
                     }
                 />
             </View>
-        </>
+        </SafeAreaView>
     );
 }
 
 export default TelaListaDeCamisas;
 
 const estilos = StyleSheet.create({
-    statusBarFalsa: {
-        height: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
-        backgroundColor: Platform.OS === 'android' ? '#007AFF' : 'transparent',
-    },
     loadingContainer: {
         flex: 1,
         justifyContent: 'center',
@@ -246,7 +242,8 @@ const estilos = StyleSheet.create({
     titulo: {
         fontSize: 24,
         fontWeight: 'bold',
-        color: '#333',
+        color: '#6366f1',
+        padding: 12,
         marginBottom: 10,
         textAlign: 'center',
     },
@@ -261,7 +258,7 @@ const estilos = StyleSheet.create({
     },
     pickerLabel: {
         fontSize: 16,
-        color: '#007AFF',
+        color: '#6366f1',
         fontWeight: 'bold',
         marginRight: 8,
     },
