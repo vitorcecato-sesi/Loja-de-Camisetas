@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet, RefreshControl, Dimensions, StatusBar, Platform, ActivityIndicator, SafeAreaView } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
+import Configuracao from '../components/configuracao';
 
 const { width, height } = Dimensions.get('window');
 
@@ -180,6 +181,7 @@ function TelaListaDeCamisas({ navigation }) {
             <View style={estilos.statusBarFalsa} />
             <View style={estilos.container}>
                 <Text style={estilos.titulo}>Catálogo de Camisas</Text>
+                <Configuracao />
                 <View style={estilos.pickerContainer}>
                     <Text style={estilos.pickerLabel}>Filtrar por time:</Text>
                     <Picker
