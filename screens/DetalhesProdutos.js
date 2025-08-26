@@ -224,6 +224,7 @@ const estilos = StyleSheet.create({
         borderRadius: 14,
         alignItems: 'center',
         marginTop: 10,
+        marginBottom: 60,
         elevation: 4,
         shadowColor: '#6366f1',
         shadowOpacity: 0.18,
