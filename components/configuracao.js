@@ -5,18 +5,14 @@ import { Picker } from "@react-native-picker/picker"
 
 export default function Configuracao() {
 
-    const [modalVisivel, setModalVisivel] = useState(false) // Controle do modal
-    const [dimensoes, setDimensoes] = useState(Dimensions.get('window'))    // Armazena dimensões
-    const [valor, setValor] = useState(0.5) // Valor do volume (porcentagem -> decimal) 
-    const [notificacoes, setNotificacoes] = useState(true)  // Definir notificações ativo ou desativado  
-    const [loading, setLoading] = useState(false)   // Loading para sair
+    const [modalVisivel, setModalVisivel] = useState(false)
+    const [dimensoes, setDimensoes] = useState(Dimensions.get('window'))
+    const [valor, setValor] = useState(0.5) 
+    const [notificacoes, setNotificacoes] = useState(true)  
+    const [loading, setLoading] = useState(false)
 
-
-    // Obter as informações de altura e largura
     const { width, height } = dimensoes
-
-
-   // UseEffect para obter as informações de dimensão 
+ 
     useEffect(() => {
         const subscription = Dimensions.addEventListener('change', ({ window }) => {
             setDimensoes(window)
@@ -26,13 +22,10 @@ export default function Configuracao() {
     }, [])
 
 
-    // Função para salvar configuração
     const salvarConfig = async () => {
 
-        // Definir animação de loading
         setLoading(true)
 
-        // Espera 2 segundos para dar a confirmação
         setTimeout(() => {
 
             Alert.alert(
@@ -61,7 +54,7 @@ export default function Configuracao() {
                         {
                             backgroundColor: pressed ? "#d1c4e9" : "#673ab7",
                             padding: 5,
-                            width: width * 0.4, // Ajuste a largura do botão
+                            width: width * 0.4,
                             borderRadius: 12,
                         }
                     ]}

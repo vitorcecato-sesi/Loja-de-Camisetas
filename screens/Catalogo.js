@@ -3,22 +3,21 @@ import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet, RefreshContr
 import { Picker } from '@react-native-picker/picker';
 import Configuracao from '../components/configuracao';
 
-// Obtem as dimensões da tela
 const { width, height } = Dimensions.get('window');
 
 function TelaListaDeCamisas({ navigation }) {
-    const [refreshing, setRefreshing] = useState(false);    // Controle do Refresh visual
-    const [timeSelecionado, setTimeSelecionado] = useState('todos');  // Filtro do Picker
-    const [loading, setLoading] = useState(true);  // Controle de loading inicial
+    const [refreshing, setRefreshing] = useState(false);    
+    const [timeSelecionado, setTimeSelecionado] = useState('todos');  
+    const [loading, setLoading] = useState(true);  
 
-    // Simula carregamento inicial (ex: carregando StatusBar e dados)
+    
     useEffect(() => {
-        // Simula carregamento inicial (ex: carregando StatusBar e dados)
+        
         const timer = setTimeout(() => setLoading(false), 1200);
         return () => clearTimeout(timer);
     }, []);
 
-    // Função de refresh (puxe para o refresh)
+    
     const onRefresh = () => {
         setRefreshing(true);
         setTimeout(() => {
@@ -26,7 +25,7 @@ function TelaListaDeCamisas({ navigation }) {
         }, 500);
     };
 
-    // Array de objetos com as informações das camisas
+    
     const camisas = [
         {
             id: 1,
@@ -120,32 +119,28 @@ function TelaListaDeCamisas({ navigation }) {
         },
     ];
 
-    // Lista de times para o Picker
+    
     const times = [
-        'todos',    // Opção fixa (para mostrar todas as camisas)
-        ...Array.from(new Set(camisas.map(c => c.time))),   // Copia a array extraindo só a informação de times
-        // new Set cria um objeto com os valores sem duplicadas (Ex: { Flamengo, Corinthians, Palmeiras })
-        // Array.from transforma esse objeto em array (Ex: { Flamengo, Corinthians, Palmeiras } -> [] Flamengo, Corinthians, Palmeiras ] )
-        // O spread "..." copia essa array para dentro do const times (para não ter uma array dentro da array)
+        'todos',    
+        ...Array.from(new Set(camisas.map(c => c.time))),   
     ];
 
-    // Filtra as camisas pelo time selecionado
-    const camisasFiltradas = timeSelecionado === 'todos'    // Verifica se o picker está em todos
-        ? camisas   // Se tiver, mostra todas as camisas
-        : camisas.filter(c => c.time === timeSelecionado)   // Caso não, ele filtra a array em busca do time filtrado
+    const camisasFiltradas = timeSelecionado === 'todos'    
+        ? camisas   
+        : camisas.filter(c => c.time === timeSelecionado)   
 
     const abrirDetalhesCamisa = (camisa) => {
-        // normaliza dados para evitar undefined / espaços nas URLs
-        const produtoNormalizado = {    // Dados da camisa normalizados
+        
+        const produtoNormalizado = {    
             ...camisa,
             imagem: (camisa.imagem || '').trim(),
-            descricao: camisa.descricao || 'Descrição não disponível.', // Texto padrão se descrição estiver vazia
-            categoria: camisa.categoria || 'Camiseta de time',  // Categoria padrão se não existir
-            estoque: typeof camisa.estoque === 'number' ? camisa.estoque : 0,   // Garante que estoque é do tipo number
-            avaliacoes: camisa.avaliacoes || 0, // Garante que avaliações é um número (padrão 0)
+            descricao: camisa.descricao || 'Descrição não disponível.', 
+            categoria: camisa.categoria || 'Camiseta de time',  
+            estoque: typeof camisa.estoque === 'number' ? camisa.estoque : 0,   
+            avaliacoes: camisa.avaliacoes || 0,
         };
 
-        // Navega para a tela de detalhes, passando os dados normalizados e informações extras
+        
         navigation.navigate('DetalhesCamisas', {
             produtoSelecionado: produtoNormalizado,
             origemNavegacao: 'lista_camisas',
@@ -153,7 +148,7 @@ function TelaListaDeCamisas({ navigation }) {
         });
     };
 
-    // Função para renderizar bloco de camisa
+    
     const renderizarCamisa = ({ item }) => (
         <TouchableOpacity style={estilos.cardCamisa} onPress={() => abrirDetalhesCamisa(item)}>
             <Image source={{ uri: item.imagem }} style={estilos.imagemCamisa} />
@@ -164,7 +159,7 @@ function TelaListaDeCamisas({ navigation }) {
         </TouchableOpacity>
     );
 
-    // Mostra tela de loading enquanto carrega
+    
     if (loading) {
         return (
             <>
@@ -195,28 +190,28 @@ function TelaListaDeCamisas({ navigation }) {
                 <View style={estilos.pickerContainer}>
                     <Text style={estilos.pickerLabel}>Filtrar por time:</Text>
                     <Picker
-                        selectedValue={timeSelecionado} // Valor selecionado
-                        style={estilos.picker}  // Estilização
-                        onValueChange={(itemValue) => setTimeSelecionado(itemValue)}    // Altera o time do filtro (time selecionado)
-                        mode="dropdown" // Modo de visualização do picker
-                        dropdownIconColor="#6366f1" // Estilização
+                        selectedValue={timeSelecionado} 
+                        style={estilos.picker}  
+                        onValueChange={(itemValue) => setTimeSelecionado(itemValue)}    
+                        mode="dropdown"
+                        dropdownIconColor="#6366f1" 
                     >
-                        {times.map((time, idx) => ( // Cria os itens do picker (opções)
+                        {times.map((time, idx) => ( 
                             <Picker.Item key={idx} label={time.charAt(0).toUpperCase() + time.slice(1)} value={time} />
                         ))}
                     </Picker>
                 </View>
                 <FlatList
-                    data={camisasFiltradas} // Informações da array (camisas filtradas)
-                    keyExtractor={(item) => item.id.toString()} // Chave única para cada item
-                    renderItem={renderizarCamisa}   // Função do renderizar camisa para criar blocos
-                    numColumns={2}  // Número de colunas
-                    showsVerticalScrollIndicator={false}    // Ocultar o vertical scroll (barra)
-                    columnWrapperStyle={estilos.linhaCamisas}   // Estilização da coluna
+                    data={camisasFiltradas} 
+                    keyExtractor={(item) => item.id.toString()} 
+                    renderItem={renderizarCamisa}   
+                    numColumns={2}  
+                    showsVerticalScrollIndicator={false}    
+                    columnWrapperStyle={estilos.linhaCamisas}   
                     refreshControl={
                         <RefreshControl
-                            refreshing={refreshing} // Define se está ativo ou não
-                            onRefresh={onRefresh}   // Ativa o refresh
+                            refreshing={refreshing} 
+                            onRefresh={onRefresh}   
                             colors={['#6366f1']}
                             tintColor="#6366f1"
                             title="Atualizando catálogo..."

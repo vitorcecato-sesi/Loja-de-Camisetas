@@ -11,23 +11,20 @@ import {
   Platform,
 } from "react-native";
 
-import { LinearGradient } from "expo-linear-gradient"; // Cor do fundo gradiente
-import { BlurView } from "expo-blur"; // Efeito borrado
-import { TextInput } from "react-native-paper"; // Imput Estilizado
-import { useForm, Controller } from "react-hook-form"; // Hook para gerenciar formulários
+import { LinearGradient } from "expo-linear-gradient";
+import { BlurView } from "expo-blur";
+import { TextInput } from "react-native-paper";
+import { useForm, Controller } from "react-hook-form";
 
 function TelaLogin({ navigation }) {
-  const { control, watch } = useForm(); // Hook do react-hook-form para controlar os inputs
+  const { control, watch } = useForm();
 
-  // Estados para controlar mensagens de erro e carregamento
   const [erro, setErro] = useState("");
   const [carregando, setCarregando] = useState(false);
 
-  // Obtém os valores digitados nos campos "usuario" e "senha"
   const usuarioDigitado = watch("usuario");
   const senhaDigitada = watch("senha");
 
-  // Simulando base de usuários
   const usuariosValidos = [
     {
       usuario: "aluno",
@@ -35,39 +32,34 @@ function TelaLogin({ navigation }) {
     },
   ];
 
-  // Função chamada ao pressionar o botão de login
   const realizarLogin = () => {
-    // Verifica se os campos foram preenchidos
+
     if (!usuarioDigitado || !senhaDigitada) {
       setErro("Preencha usuário e senha");
       return;
     }
 
-    // Verifica se os dados digitados correspondem a algum usuário válido
     const usuarioValido = usuariosValidos.find(
       (u) => u.usuario === usuarioDigitado && u.senha === senhaDigitada
     );
-    //(u) é um objeto que contém as propriedades usuario senha.
 
-    // Se não encontrar usuário válido, exibe erro
     if (!usuarioValido) {
       setErro("Usuário ou senha incorretos");
       return;
     }
 
-    setErro(""); //Limpa o erro
-    setCarregando(true); // Inicia o carregamento
+    setErro(""); 
+    setCarregando(true); 
 
-    // Simula um atraso de 3 segundos antes de navegar
     setTimeout(() => {
       setCarregando(false);
-      navigation.navigate('Catalogo'); // Navega para a próxima tela
+      navigation.navigate('Catalogo');
     }, 3000); 
   }
 
   return (
     <LinearGradient
-          colors={["#0c3479ff", "#90EE90"]} // Gradiente azul com verde
+          colors={["#0c3479ff", "#90EE90"]} 
           style={estilos.tela}
         >
         {/*Evita que o teclado sobreponha os campos (iOS e Android)*/}
@@ -75,26 +67,26 @@ function TelaLogin({ navigation }) {
       behaivor={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView>
-        {" "}
+        
         {/* Permite rolar a tela em dispositivos menores */}
           <View style={estilos.container}>
             <Text style={estilos.titulo}>Time de Craques ⚽</Text>
 
             <BlurView intensity={40} style={estilos.contInp}>
-              {" "}
+              
               {/* Área com desfoque para os inputs */}
               <View style={estilos.conInpueTitu}>
                 <Text style={estilos.titInpu}> Faça Login</Text>
 
                 {/* Campo de entrada do usuário */}
                 <Controller
-                  control={control} // Objeto vindo do useForm()
-                  name="usuario" // Nome do campo (chave do formulário)
+                  control={control} 
+                  name="usuario" 
                   render={({ field: { onChange, value } }) => (
                     <TextInput
                       label="Usuário"
-                      value={value} //Valor atual do campo
-                      onChangeText={onChange} // Atualiza o valor quando o usuário digita
+                      value={value} 
+                      onChangeText={onChange} 
                       style={estilos.input}
                     />
                   )}
@@ -102,15 +94,15 @@ function TelaLogin({ navigation }) {
 
                 {/* Campo de entrada da senha */}
                 <Controller
-                  control={control} // Objeto vindo do useForm()
-                  name="senha"     // Nome do campo (chave do formulário)
+                  control={control} 
+                  name="senha"     
                   render={({ field: { onChange, value } }) => (
                     <TextInput
                       label="Senha"
-                      value={value} //Valor atual do campo
-                      onChangeText={onChange} // Atualiza o valor quando o usuário digita
+                      value={value} 
+                      onChangeText={onChange}
                       keyboardType="password"
-                      secureTextEntry // Oculta o texto da senha
+                      secureTextEntry 
                       style={estilos.input}
                     />
                   )}
