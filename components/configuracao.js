@@ -55,7 +55,7 @@ export default function Configuracao() {
             {/* Botão que será retornado */}
             <View style={styles.buttonContainer}>
                 <Pressable
-                    title={"Configurações ⚙"}
+                    title={"Configurações"}
                     style={({ pressed }) => [
                         styles.button,
                         {
