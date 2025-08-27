@@ -70,7 +70,7 @@ function TelaLogin({ navigation }) {
           colors={["#0c3479ff", "#90EE90"]} // Gradiente azul com verde
           style={estilos.tela}
         >
-    // Evita que o teclado sobreponha os campos (iOS e Android)
+        {/*Evita que o teclado sobreponha os campos (iOS e Android)*/}
     <KeyboardAvoidingView
       behaivor={Platform.OS === "ios" ? "padding" : "height"}
     >
