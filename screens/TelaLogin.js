@@ -66,6 +66,10 @@ function TelaLogin({ navigation }) {
   }
 
   return (
+    <LinearGradient
+          colors={["#0c3479ff", "#90EE90"]} // Gradiente azul com verde
+          style={estilos.tela}
+        >
     // Evita que o teclado sobreponha os campos (iOS e Android)
     <KeyboardAvoidingView
       behaivor={Platform.OS === "ios" ? "padding" : "height"}
@@ -73,10 +77,6 @@ function TelaLogin({ navigation }) {
       <ScrollView>
         {" "}
         {/* Permite rolar a tela em dispositivos menores */}
-        <LinearGradient
-          colors={["#0c3479ff", "#90EE90"]} // Gradiente azul com verde
-          style={estilos.tela}
-        >
           <View style={estilos.container}>
             <Text style={estilos.titulo}>Time de Craques ⚽</Text>
 
@@ -137,9 +137,9 @@ function TelaLogin({ navigation }) {
               </TouchableOpacity>
             )}
           </View>
-        </LinearGradient>
       </ScrollView>
     </KeyboardAvoidingView>
+     </LinearGradient>
   );
 }
 
