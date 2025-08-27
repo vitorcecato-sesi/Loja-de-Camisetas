@@ -151,6 +151,7 @@ const estilos = StyleSheet.create({
   },
   tela: {
     flex: 1,
+     minHeight: '100%', 
   },
   titulo: {
     fontSize: 30,
