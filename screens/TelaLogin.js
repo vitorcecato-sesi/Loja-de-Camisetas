@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -8,8 +8,10 @@ import {
   ScrollView,
   ActivityIndicator,
   KeyboardAvoidingView,
-  Platform,
+  Platform
 } from "react-native";
+
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 import { LinearGradient } from "expo-linear-gradient";
 import { BlurView } from "expo-blur";
@@ -24,6 +26,16 @@ function TelaLogin({ navigation }) {
 
   const usuarioDigitado = watch("usuario");
   const senhaDigitada = watch("senha");
+  const apelidoDigitado = watch("apelido")
+
+  const salvarDados = async () => {
+    try {
+      await AsyncStorage.setItem("apelido", apelidoDigitado);
+     
+    } catch (error) {
+      console.error("Erro ao salvar dados:", error);
+    }
+  }
 
   const usuariosValidos = [
     {
@@ -34,8 +46,8 @@ function TelaLogin({ navigation }) {
 
   const realizarLogin = () => {
 
-    if (!usuarioDigitado || !senhaDigitada) {
-      setErro("Preencha usuário e senha");
+    if (!usuarioDigitado || !senhaDigitada || !apelidoDigitado) {
+      setErro("Preencha usuário, apelido e senha");
       return;
     }
 
@@ -44,7 +56,7 @@ function TelaLogin({ navigation }) {
     );
 
     if (!usuarioValido) {
-      setErro("Usuário ou senha incorretos");
+      setErro("Usuário incorreto");
       return;
     }
 
@@ -53,6 +65,7 @@ function TelaLogin({ navigation }) {
 
     setTimeout(() => {
       setCarregando(false);
+      salvarDados()
       navigation.navigate('Catalogo');
     }, 3000); 
   }
@@ -103,6 +116,20 @@ function TelaLogin({ navigation }) {
                       onChangeText={onChange}
                       keyboardType="password"
                       secureTextEntry 
+                      style={estilos.input}
+                    />
+                  )}
+                />
+
+                {/* Campo de entrada do apelido */}
+                <Controller
+                  control={control} 
+                  name="apelido" 
+                  render={({ field: { onChange, value } }) => (
+                    <TextInput
+                      label="Apelido (Obrigatório)"
+                      value={value}
+                      onChangeText={onChange} 
                       style={estilos.input}
                     />
                   )}

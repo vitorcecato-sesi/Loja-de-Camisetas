@@ -1,23 +1,45 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet, RefreshControl, Dimensions, StatusBar, Platform, ActivityIndicator, SafeAreaView } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet, RefreshControl, Dimensions, StatusBar, Platform, ActivityIndicator, SafeAreaView, Alert } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import Configuracao from '../components/configuracao';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width, height } = Dimensions.get('window');
 
 function TelaListaDeCamisas({ navigation }) {
-    const [refreshing, setRefreshing] = useState(false);    
-    const [timeSelecionado, setTimeSelecionado] = useState('todos');  
-    const [loading, setLoading] = useState(true);  
+    const [refreshing, setRefreshing] = useState(false);
+    const [timeSelecionado, setTimeSelecionado] = useState('todos');
+    const [loading, setLoading] = useState(true);
+    const [nomeUser, setNomeUser] = useState("")
 
-    
+    const carregarDados = async () => {
+        try {
+            const apelido = await AsyncStorage.getItem('apelido')
+            if (apelido !== null) {
+                setNomeUser(apelido)
+                console.log(apelido)
+            }
+            else {
+                Alert.alert("Erro", "Nome não encontrado.")
+                setNomeUser("Anonimo")
+            }
+        } catch (e) {
+            Alert.alert("Erro", 'Erro ao carregar dados.')
+            console.error(e)
+        }
+    }
+
     useEffect(() => {
-        
+        carregarDados()
+    }, [refreshing])
+
+    useEffect(() => {
+
         const timer = setTimeout(() => setLoading(false), 1200);
         return () => clearTimeout(timer);
     }, []);
 
-    
+
     const onRefresh = () => {
         setRefreshing(true);
         setTimeout(() => {
@@ -25,7 +47,7 @@ function TelaListaDeCamisas({ navigation }) {
         }, 500);
     };
 
-    
+
     const camisas = [
         {
             id: 1,
@@ -119,28 +141,28 @@ function TelaListaDeCamisas({ navigation }) {
         },
     ];
 
-    
+
     const times = [
-        'todos',    
-        ...Array.from(new Set(camisas.map(c => c.time))),   
+        'todos',
+        ...Array.from(new Set(camisas.map(c => c.time))),
     ];
 
-    const camisasFiltradas = timeSelecionado === 'todos'    
-        ? camisas   
-        : camisas.filter(c => c.time === timeSelecionado)   
+    const camisasFiltradas = timeSelecionado === 'todos'
+        ? camisas
+        : camisas.filter(c => c.time === timeSelecionado)
 
     const abrirDetalhesCamisa = (camisa) => {
-        
-        const produtoNormalizado = {    
+
+        const produtoNormalizado = {
             ...camisa,
             imagem: (camisa.imagem || '').trim(),
-            descricao: camisa.descricao || 'Descrição não disponível.', 
-            categoria: camisa.categoria || 'Camiseta de time',  
-            estoque: typeof camisa.estoque === 'number' ? camisa.estoque : 0,   
+            descricao: camisa.descricao || 'Descrição não disponível.',
+            categoria: camisa.categoria || 'Camiseta de time',
+            estoque: typeof camisa.estoque === 'number' ? camisa.estoque : 0,
             avaliacoes: camisa.avaliacoes || 0,
         };
 
-        
+
         navigation.navigate('DetalhesCamisas', {
             produtoSelecionado: produtoNormalizado,
             origemNavegacao: 'lista_camisas',
@@ -148,7 +170,7 @@ function TelaListaDeCamisas({ navigation }) {
         });
     };
 
-    
+
     const renderizarCamisa = ({ item }) => (
         <TouchableOpacity style={estilos.cardCamisa} onPress={() => abrirDetalhesCamisa(item)}>
             <Image source={{ uri: item.imagem }} style={estilos.imagemCamisa} />
@@ -159,7 +181,7 @@ function TelaListaDeCamisas({ navigation }) {
         </TouchableOpacity>
     );
 
-    
+
     if (loading) {
         return (
             <>
@@ -186,32 +208,33 @@ function TelaListaDeCamisas({ navigation }) {
             <View style={estilos.statusBarFalsa} />
             <View style={estilos.container}>
                 <Text style={estilos.titulo}>Catálogo de Camisas</Text>
+                <Text style={{ textAlign: 'center', fontWeight: 'bold', fontSize: 15, color:'#3300ffff' }}>Bem vindo(a), {nomeUser}</Text>
                 <Configuracao />
                 <View style={estilos.pickerContainer}>
                     <Text style={estilos.pickerLabel}>Filtrar por time:</Text>
                     <Picker
-                        selectedValue={timeSelecionado} 
-                        style={estilos.picker}  
-                        onValueChange={(itemValue) => setTimeSelecionado(itemValue)}    
+                        selectedValue={timeSelecionado}
+                        style={estilos.picker}
+                        onValueChange={(itemValue) => setTimeSelecionado(itemValue)}
                         mode="dropdown"
-                        dropdownIconColor="#6366f1" 
+                        dropdownIconColor="#6366f1"
                     >
-                        {times.map((time, idx) => ( 
+                        {times.map((time, idx) => (
                             <Picker.Item key={idx} label={time.charAt(0).toUpperCase() + time.slice(1)} value={time} />
                         ))}
                     </Picker>
                 </View>
                 <FlatList
-                    data={camisasFiltradas} 
-                    keyExtractor={(item) => item.id.toString()} 
-                    renderItem={renderizarCamisa}   
-                    numColumns={2}  
-                    showsVerticalScrollIndicator={false}    
-                    columnWrapperStyle={estilos.linhaCamisas}   
+                    data={camisasFiltradas}
+                    keyExtractor={(item) => item.id.toString()}
+                    renderItem={renderizarCamisa}
+                    numColumns={2}
+                    showsVerticalScrollIndicator={false}
+                    columnWrapperStyle={estilos.linhaCamisas}
                     refreshControl={
                         <RefreshControl
-                            refreshing={refreshing} 
-                            onRefresh={onRefresh}   
+                            refreshing={refreshing}
+                            onRefresh={onRefresh}
                             colors={['#6366f1']}
                             tintColor="#6366f1"
                             title="Atualizando catálogo..."

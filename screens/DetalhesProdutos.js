@@ -10,84 +10,110 @@ import {
   ScrollView,
 } from 'react-native'
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-function ListaDetalhesProdutos({ route, navigation }) { 
 
-  const { produtoSelecionado } = route.params || {} 
+function ListaDetalhesProdutos({ route, navigation }) {
+
+  const { produtoSelecionado } = route.params || {}
 
   const [quantidade, setQuantidade] = useState(1)
 
-  
+  const [apelidoUser, setApelidoUser] = useState("")
+
+  const carregarDados = async () => {
+    try {
+      const apelido = await AsyncStorage.getItem('apelido')
+      if (apelido !== null) {
+        setApelidoUser(apelido)
+        console.log(apelido)
+      }
+      else {
+        Alert.alert("Erro", "Nome não encontrado.")
+        setApelidoUser("Anonimo")
+      }
+    } catch (e) {
+      Alert.alert("Erro", 'Erro ao carregar dados.')
+      console.error(e)
+    }
+  }
+
+  useEffect(() => {
+    carregarDados()
+  }, [])
+
+
   useEffect(() => {
     if (!produtoSelecionado) {
       Alert.alert('Erro', 'Produto não encontrado', [
-  
+
         { text: 'Voltar', onPress: () => navigation.goBack() },
       ])
     }
-  }, [produtoSelecionado]) 
+  }, [produtoSelecionado])
 
-  
+
   if (!produtoSelecionado) {
     return null
   }
 
-  
+
   const adicionarAoCarrinho = () => {
     Alert.alert(
       'Sucesso!',
       `${quantidade} ${produtoSelecionado.nome} adicionado(s) ao carrinho!`,
       [
         {
-          text: 'Continuar Comprando', 
-          onPress: () => navigation.goBack(), 
+          text: 'Continuar Comprando',
+          onPress: () => navigation.goBack(),
         },
       ]
     )
   }
 
-  const alterarQuantidade = (incremento) => { 
+  const alterarQuantidade = (incremento) => {
     const novaQuantidade = quantidade + incremento
-    
+
     if (novaQuantidade >= 1 && novaQuantidade <= (produtoSelecionado.estoque || 0)) {
       setQuantidade(novaQuantidade)
     }
   }
 
-  
+
   const imagemUri = (produtoSelecionado.imagem || '').trim() || 'https://via.placeholder.com/400'
 
   return (
-  
+
     <ScrollView style={estilos.container}>
 
-    
-      <TouchableOpacity style={estilos.botaoVoltar} onPress={() => navigation.goBack()}> 
+
+      <TouchableOpacity style={estilos.botaoVoltar} onPress={() => navigation.goBack()}>
         <Text style={estilos.textoVoltar}> Voltar </Text>
       </TouchableOpacity>
 
-    
+      <Text style={{ textAlign: 'center', fontWeight: 'bold', fontSize: 15, color:'#3300ffff' }} >Bem vindo(a), {apelidoUser}</Text>
+
       <Image source={{ uri: imagemUri }} style={estilos.imagemGrande} />
 
-    
+
       <Text style={estilos.nomeProduto}> {produtoSelecionado.nome} </Text>
 
-    
+
       <Text style={estilos.precoProduto}>
         R$ {(produtoSelecionado.preco || 0).toFixed(2)}
       </Text>
 
-    
+
       <Text style={estilos.estoque}>
-        Estoque: {produtoSelecionado.estoque ? produtoSelecionado.estoque : 0} unidades 
+        Estoque: {produtoSelecionado.estoque ? produtoSelecionado.estoque : 0} unidades
       </Text>
 
-    
+
       <Text style={estilos.descricaoProduto}> {produtoSelecionado.descricao} </Text>
 
-    
+
       <View style={estilos.tamanhosContainer}>
-        {['P', 'M', 'G', 'XG'].map((tamanho) => ( 
+        {['P', 'M', 'G', 'XG'].map((tamanho) => (
 
           <View key={tamanho} style={estilos.tagTamanho}>
             <Text style={estilos.textoTagTamanho}> {tamanho} </Text>
@@ -95,23 +121,23 @@ function ListaDetalhesProdutos({ route, navigation }) {
         ))}
       </View>
 
-    
+
       <View style={estilos.selectorQuantidade}>
-    
+
         <TouchableOpacity style={estilos.botaoQuantidade} onPress={() => alterarQuantidade(-1)}>
           <Text style={estilos.textoQuantidade}> - </Text>
         </TouchableOpacity>
 
-    
+
         <Text style={estilos.numeroQuantidade}> {quantidade} </Text>
 
-    
+
         <TouchableOpacity style={estilos.botaoQuantidade} onPress={() => alterarQuantidade(1)}>
           <Text style={estilos.textoQuantidade}> + </Text>
         </TouchableOpacity>
       </View>
 
-    
+
       <TouchableOpacity style={estilos.botaoComprar} onPress={adicionarAoCarrinho}>
         <Text style={estilos.textoBotaoComprar}> Adicionar ao Carrinho </Text>
       </TouchableOpacity>
