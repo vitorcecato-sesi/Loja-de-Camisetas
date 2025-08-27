@@ -17,7 +17,7 @@ import { TextInput } from "react-native-paper"; // Imput Estilizado
 import { useForm, Controller } from "react-hook-form"; // Hook para gerenciar formulários
 
 function TelaLogin({ navigation }) {
-  const { control, handleSubmit, watch } = useForm(); // Hook do react-hook-form para controlar os inputs
+  const { control, watch } = useForm(); // Hook do react-hook-form para controlar os inputs
 
   // Estados para controlar mensagens de erro e carregamento
   const [erro, setErro] = useState("");
