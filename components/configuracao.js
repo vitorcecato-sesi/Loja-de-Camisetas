@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { Dimensions, View, Text, Pressable, Modal, StyleSheet, TouchableHighlight, ScrollView, Switch, Alert, ActivityIndicator } from "react-native"
+import { Dimensions, View, Text, Pressable, Modal, StyleSheet, TouchableHighlight, ScrollView, Switch, Alert } from "react-native"
 import Slider from "@react-native-community/slider"
 import { Picker } from "@react-native-picker/picker"
 
