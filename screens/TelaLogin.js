@@ -31,7 +31,7 @@ function TelaLogin({ navigation }) {
   const salvarDados = async () => {
     try {
       await AsyncStorage.setItem("apelido", apelidoDigitado);
-     
+
     } catch (error) {
       console.error("Erro ao salvar dados:", error);
     }
@@ -60,46 +60,46 @@ function TelaLogin({ navigation }) {
       return;
     }
 
-    setErro(""); 
-    setCarregando(true); 
+    setErro("");
+    setCarregando(true);
 
     setTimeout(() => {
       setCarregando(false);
       salvarDados()
       navigation.navigate('Catalogo');
-    }, 3000); 
+    }, 3000);
   }
 
   return (
     <LinearGradient
-          colors={["#0c3479ff", "#90EE90"]} 
-          style={estilos.tela}
-        >
-        {/*Evita que o teclado sobreponha os campos (iOS e Android)*/}
-    <KeyboardAvoidingView
-      behaivor={Platform.OS === "ios" ? "padding" : "height"}
+      colors={["#0c3479ff", "#90EE90"]}
+      style={estilos.tela}
     >
-      <ScrollView>
-        
-        {/* Permite rolar a tela em dispositivos menores */}
+      {/*Evita que o teclado sobreponha os campos (iOS e Android)*/}
+      <KeyboardAvoidingView
+        behaivor={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <ScrollView>
+
+          {/* Permite rolar a tela em dispositivos menores */}
           <View style={estilos.container}>
             <Text style={estilos.titulo}>Time de Craques ⚽</Text>
 
             <BlurView intensity={40} style={estilos.contInp}>
-              
+
               {/* Área com desfoque para os inputs */}
               <View style={estilos.conInpueTitu}>
                 <Text style={estilos.titInpu}> Faça Login</Text>
 
                 {/* Campo de entrada do usuário */}
                 <Controller
-                  control={control} 
-                  name="usuario" 
+                  control={control}
+                  name="usuario"
                   render={({ field: { onChange, value } }) => (
                     <TextInput
                       label="Usuário"
-                      value={value} 
-                      onChangeText={onChange} 
+                      value={value}
+                      onChangeText={onChange}
                       style={estilos.input}
                     />
                   )}
@@ -107,15 +107,15 @@ function TelaLogin({ navigation }) {
 
                 {/* Campo de entrada da senha */}
                 <Controller
-                  control={control} 
-                  name="senha"     
+                  control={control}
+                  name="senha"
                   render={({ field: { onChange, value } }) => (
                     <TextInput
                       label="Senha"
-                      value={value} 
+                      value={value}
                       onChangeText={onChange}
                       keyboardType="password"
-                      secureTextEntry 
+                      secureTextEntry
                       style={estilos.input}
                     />
                   )}
@@ -123,13 +123,13 @@ function TelaLogin({ navigation }) {
 
                 {/* Campo de entrada do apelido */}
                 <Controller
-                  control={control} 
-                  name="apelido" 
+                  control={control}
+                  name="apelido"
                   render={({ field: { onChange, value } }) => (
                     <TextInput
                       label="Apelido (Obrigatório)"
                       value={value}
-                      onChangeText={onChange} 
+                      onChangeText={onChange}
                       style={estilos.input}
                     />
                   )}
@@ -143,10 +143,12 @@ function TelaLogin({ navigation }) {
             {/* Se estiver carregando, mostra texto e spinner */}
             {carregando && (
               <>
-                <Text style={{ marginVertical: 10 }}>
-                  Carregando, segura aí!
-                </Text>
-                <ActivityIndicator size="large" color="#218cff" />
+                <View style={{ marginVertical: 60 }}>
+                  <Text>
+                    Carregando, segura aí!
+                  </Text>
+                  <ActivityIndicator size="large" color="#218cff" />
+                </View>
               </>
             )}
             {/* Botão de login (só aparece se não estiver carregando) */}
@@ -156,9 +158,9 @@ function TelaLogin({ navigation }) {
               </TouchableOpacity>
             )}
           </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
-     </LinearGradient>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </LinearGradient>
   );
 }
 
@@ -170,7 +172,7 @@ const estilos = StyleSheet.create({
   },
   tela: {
     flex: 1,
-     minHeight: '100%', 
+    minHeight: '100%',
   },
   titulo: {
     fontSize: 30,
