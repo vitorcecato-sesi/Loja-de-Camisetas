@@ -11,16 +11,19 @@ import {
   Platform,
 } from 'react-native';
 
-import { LinearGradient } from 'expo-linear-gradient';
-import { BlurView } from 'expo-blur';
-import { TextInput } from 'react-native-paper';
-import { useForm, Controller } from 'react-hook-form';
+import { LinearGradient } from 'expo-linear-gradient'; // Cor do fundo gradiente
+import { BlurView } from 'expo-blur'; // Efeito borrado 
+import { TextInput } from 'react-native-paper'; // Imput Estilizado
+import { useForm, Controller } from 'react-hook-form'; // Hook para gerenciar formulários
 
 function TelaLogin({ navigation }) {
-  const { control, handleSubmit, watch } = useForm();
+  const { control, handleSubmit, watch } = useForm();  // Hook do react-hook-form para controlar os inputs
+
+  // Estados para controlar mensagens de erro e carregamento
   const [erro, setErro] = useState('');
   const [carregando, setCarregando] = useState(false);
 
+  // Obtém os valores digitados nos campos "usuario" e "senha"
   const usuarioDigitado = watch('usuario');
   const senhaDigitada = watch('senha');
 
@@ -32,23 +35,27 @@ function TelaLogin({ navigation }) {
     },
   ];
 
+  // Função chamada ao pressionar o botão de login
   const realizarLogin = () => {
+  // Verifica se os campos foram preenchidos
     if (!usuarioDigitado || !senhaDigitada) {
       setErro('Preencha usuário e senha');
       return;
     }
 
+    // Verifica se os dados digitados correspondem a algum usuário válido
     const usuarioValido = usuariosValidos.find(
       (u) => u.usuario === usuarioDigitado && u.senha === senhaDigitada
     );
     //(u) é um objeto que contém as propriedades usuario senha.
 
+    // Se não encontrar usuário válido, exibe erro
     if (!usuarioValido) {
       setErro('Usuário ou senha incorretos');
       return;
     }
 
-    setErro('');
+    setErro(''); //Limpa o erro
     setCarregando(true); // Inicia o carregamento
 
     // Simula um atraso de 3 segundos antes de navegar
@@ -59,20 +66,22 @@ function TelaLogin({ navigation }) {
   }
 
   return (
+    // Evita que o teclado sobreponha os campos (iOS e Android)
     <KeyboardAvoidingView
     behaivor={Platform.OS === "ios" ? "padding" : "height"}
     >
-    <ScrollView>
+    <ScrollView> {/* Permite rolar a tela em dispositivos menores */}
       <LinearGradient
-        colors={['#0c3479ff', '#90EE90']} // gradiente azul
+        colors={['#0c3479ff', '#90EE90']} // Gradiente azul com verde
         style={estilos.tela}>
         <View style={estilos.container}>
           <Text style={estilos.titulo}>Time de Craques ⚽</Text>
 
-          <BlurView intensity={40} style={estilos.contInp}>
+          <BlurView intensity={40} style={estilos.contInp}> {/* Área com desfoque para os inputs */}
             <View style={estilos.conInpueTitu}>
               <Text style={estilos.titInpu}> Faça Login</Text>
-              <Controller
+               {/* Campo de entrada do usuário */}
+              <Controller 
                 control={control}
                 name="usuario"
                 render={({ field: { onChange, value } }) => (
@@ -85,7 +94,7 @@ function TelaLogin({ navigation }) {
                 )}
               />
 
-              {/* campo telefone */}
+              {/* Campo de entrada da senha */}
               <Controller
                 control={control}
                 name="senha"
@@ -95,18 +104,20 @@ function TelaLogin({ navigation }) {
                     value={value}
                     onChangeText={onChange}
                     keyboardType="password"
-                    secureTextEntry
+                    secureTextEntry // Oculta o texto da senha
                     style={estilos.input}
                   />
                 )}
               />
 
+              {/* Exibe mensagem de erro, se houver */}
               {erro !== '' && <Text style={estilos.error}>{erro}</Text>}
 
             </View>
           </BlurView>
 
           
+            {/* Se estiver carregando, mostra texto e spinner */}
             {carregando && (
               <>
                 <Text style={{ marginVertical: 10 }}>
@@ -115,6 +126,7 @@ function TelaLogin({ navigation }) {
                 <ActivityIndicator size="large" color="#218cff" />
               </>
             )}
+            {/* Botão de login (só aparece se não estiver carregando) */}
             {!carregando && 
             <TouchableOpacity style={estilos.botao} onPress={realizarLogin}>
             <Text style={estilos.textoBotao}>Entrar</Text>
