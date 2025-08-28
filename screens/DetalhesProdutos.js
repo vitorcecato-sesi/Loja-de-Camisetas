@@ -1,14 +1,6 @@
 import { useState, useEffect } from 'react'
 
-import {
-  View,
-  Text,
-  Image,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-  ScrollView,
-} from 'react-native'
+import { View, Text, Image, TouchableOpacity, StyleSheet, Alert, ScrollView } from 'react-native'
 
 // Importação para a utilização do storage
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -22,13 +14,20 @@ function ListaDetalhesProdutos({ route, navigation }) {
 
   const [apelidoUser, setApelidoUser] = useState("")
 
+  const [listaDesejos, setListaDesejos] = useState([])
+
+  const [carregado, setCarregando] = useState(false)
+
   // Função para carregar dados do AsyncStorage
   const carregarDados = async () => {
     try {  // Tenta carregar os dados
-      
+
       // Armazena o apelido do usuário
       const apelido = await AsyncStorage.getItem('apelido')
-      
+
+      // Armazena a informação do localStorage
+      const listaDesejosString = await AsyncStorage.getItem('listaDesejos')
+
       // Se o apelido existir, atualiza o estado, senão exibe um alerta e define como "Anônimo"
       if (apelido !== null) {
         setApelidoUser(apelido)
@@ -38,13 +37,23 @@ function ListaDetalhesProdutos({ route, navigation }) {
         Alert.alert("Erro", "Nome não encontrado.")
         setApelidoUser("Anonimo")
       }
+
+      if (listaDesejosString) {
+        setListaDesejos(() => JSON.parse(listaDesejosString))
+
+      } else {
+        Alert.alert("Erro", "Lista de desejos está vazia.")
+      }
+
+      setCarregando(true)
+
     } catch (e) { // Em caso de erro em buscar, exibe um alerta e o erro no console
       Alert.alert("Erro", 'Erro ao carregar dados.')
       console.error(e)
     }
   }
 
-  // Busca o apelido quando o usuário entrar na tela
+  // Faz a busca de dados quando iniciar
   useEffect(() => {
     carregarDados()
   }, [])
@@ -78,6 +87,7 @@ function ListaDetalhesProdutos({ route, navigation }) {
     )
   }
 
+
   const alterarQuantidade = (incremento) => {
     const novaQuantidade = quantidade + incremento
 
@@ -89,6 +99,74 @@ function ListaDetalhesProdutos({ route, navigation }) {
 
   const imagemUri = (produtoSelecionado.imagem || '').trim() || 'https://via.placeholder.com/400'
 
+  // --------------------- AsyncDesejos
+
+  // Função para salvar dados no AsyncStorage
+  const salvarDados = async () => {
+    try { // Tenta salvar os dados
+
+      console.log(listaDesejos)
+
+
+      // Salva a lista de desejos no AsyncStorage
+      await AsyncStorage.setItem("listaDesejos", JSON.stringify(listaDesejos));
+
+    } catch (error) { // Em caso de erro, exibe no console
+      console.error("Erro ao salvar dados:", error);
+    }
+  }
+
+  useEffect(() => {
+    if (carregado) {
+      salvarDados()
+    }
+  }, [listaDesejos, carregado])
+
+  // Adiciona um item na lista de desejo
+  const adicionarDesejo = () => {
+
+    // Tratamento para evitar bugs (não tão necessário agora)
+    if (listaDesejos.find(item => item.id === produtoSelecionado.id)) {
+      Alert.alert('Aviso', `${produtoSelecionado.nome} já está na lista de desejos.`)
+      return
+    }
+
+    // Criação da nova array com os itens passados e o novo
+    const novaLista = [...listaDesejos, produtoSelecionado]
+
+    console.log(`teste: ${novaLista}`)  // Console log para checar informações
+
+    // Definindo a nova lista
+    setListaDesejos(novaLista)
+
+    Alert.alert(
+      `Sucesso, ${apelidoUser}!`,
+      `${produtoSelecionado.nome} adicionado aos desejos!`,
+      [
+        {
+          text: 'Obrigado!',
+        },
+      ]
+    )
+  }
+
+  // Remover da lista de desejo
+  const removerDesejo = () => {
+
+    // Filtra a array, criando uma nova somente com itens diferentes do que a gente selecionou
+    setListaDesejos(listaDesejos.filter(item => item.id !== produtoSelecionado.id))
+
+    Alert.alert(
+      `Sucesso, ${apelidoUser}!`,
+      `${produtoSelecionado.nome} removido dos desejos!`,
+      [
+        {
+          text: 'Obrigado!',
+        },
+      ]
+    )
+  }
+
   return (
 
     <ScrollView style={estilos.container}>
@@ -98,7 +176,7 @@ function ListaDetalhesProdutos({ route, navigation }) {
         <Text style={estilos.textoVoltar}> Voltar </Text>
       </TouchableOpacity>
 
-      <Text style={{ textAlign: 'center', fontWeight: 'bold', fontSize: 15, color:'#3300ffff' }} >Bem vindo(a), {apelidoUser}</Text>
+      <Text style={{ textAlign: 'center', fontWeight: 'bold', fontSize: 15, color: '#3300ffff' }} >Bem vindo(a), {apelidoUser}</Text>
 
       <Image source={{ uri: imagemUri }} style={estilos.imagemGrande} />
 
@@ -144,7 +222,18 @@ function ListaDetalhesProdutos({ route, navigation }) {
         </TouchableOpacity>
       </View>
 
+      <View>
+        {!listaDesejos.find(item => item.id === produtoSelecionado.id) &&
+          <TouchableOpacity style={estilos.botaoComprar} onPress={adicionarDesejo}>
+            <Text style={estilos.textoBotaoComprar}> Adicionar Lista de Desejos </Text>
+          </TouchableOpacity>}
 
+        {listaDesejos.find(item => item.id === produtoSelecionado.id) &&
+          <TouchableOpacity style={estilos.botaoRemover} onPress={removerDesejo}>
+            <Text style={estilos.textoBotaoComprar}> Remover Lista de Desejos </Text>
+          </TouchableOpacity>}
+
+      </View>
       <TouchableOpacity style={estilos.botaoComprar} onPress={adicionarAoCarrinho}>
         <Text style={estilos.textoBotaoComprar}> Adicionar ao Carrinho </Text>
       </TouchableOpacity>
@@ -297,8 +386,8 @@ const estilos = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: 14,
     alignItems: 'center',
-    marginTop: 10,
-    marginBottom: 60,
+    marginTop: 30,
+    marginBottom: 30,
     elevation: 4,
     shadowColor: '#6366f1',
     shadowOpacity: 0.18,
@@ -311,4 +400,17 @@ const estilos = StyleSheet.create({
     fontWeight: 'bold',
     letterSpacing: 1,
   },
+  botaoRemover: {
+    backgroundColor: '#f16363ff',
+    paddingVertical: 16,
+    borderRadius: 14,
+    alignItems: 'center',
+    marginTop: 30,
+    marginBottom: 30,
+    elevation: 4,
+    shadowColor: '#f16363ff',
+    shadowOpacity: 0.18,
+    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 8,
+  }
 })

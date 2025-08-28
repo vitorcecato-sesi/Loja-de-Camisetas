@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet, RefreshControl, Dimensions, StatusBar, Platform, ActivityIndicator, SafeAreaView, Alert } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, Image, Pressable, StyleSheet, RefreshControl, Dimensions, StatusBar, Platform, ActivityIndicator, SafeAreaView, Alert } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import Configuracao from '../components/configuracao';
 
@@ -180,15 +180,17 @@ function TelaListaDeCamisas({ navigation }) {
     };
 
 
-    const renderizarCamisa = ({ item }) => (
-        <TouchableOpacity style={estilos.cardCamisa} onPress={() => abrirDetalhesCamisa(item)}>
-            <Image source={{ uri: item.imagem }} style={estilos.imagemCamisa} />
-            <View style={estilos.infoCamisa}>
-                <Text style={estilos.nomeCamisa}>{item.nome}</Text>
-                <Text style={estilos.precoCamisa}>R$ {item.preco.toFixed(2)}</Text>
-            </View>
-        </TouchableOpacity>
-    );
+    const renderizarCamisa = ({ item }) => {
+        return (
+            <TouchableOpacity style={estilos.cardCamisa} onPress={() => abrirDetalhesCamisa(item)}>
+                <Image source={{ uri: item.imagem }} style={estilos.imagemCamisa} />
+                <View style={estilos.infoCamisa}>
+                    <Text style={estilos.nomeCamisa}>{item.nome}</Text>
+                    <Text style={estilos.precoCamisa}>R$ {item.preco.toFixed(2)}</Text>
+                </View>
+            </TouchableOpacity >
+        )
+    };
 
 
     if (loading) {
@@ -217,7 +219,26 @@ function TelaListaDeCamisas({ navigation }) {
             <View style={estilos.statusBarFalsa} />
             <View style={estilos.container}>
                 <Text style={estilos.titulo}>Catálogo de Camisas</Text>
-                <Text style={{ textAlign: 'center', fontWeight: 'bold', fontSize: 15, color:'#3300ffff' }}>Bem vindo(a), {nomeUser}</Text>
+                <Text style={{ textAlign: 'center', fontWeight: 'bold', fontSize: 15, color: '#3300ffff' }}>Bem vindo(a), {nomeUser}</Text>
+                <View style={estilos.botaoDesejos}>
+                    <Pressable
+                        title={"ListaDesejos"}
+                        style={({ pressed }) => [
+                            estilos.buttonDesejos,
+                            {
+                                backgroundColor: pressed ? "#d1c4e9" : "#673ab7",
+                                padding: 5,
+                                width: width * 0.4,
+                                borderRadius: 12,
+                            }
+                        ]}
+                        onPress={() => navigation.navigate('ListaDesejos')}
+                    >
+                        <Text style={{ ...estilos.DesejoText, fontSize: 15, fontWeight: 'bold' }}>
+                            Lista de Desejos
+                        </Text>
+                    </Pressable>
+                </View>
                 <Configuracao />
                 <View style={estilos.pickerContainer}>
                     <Text style={estilos.pickerLabel}>Filtrar por time:</Text>
@@ -344,5 +365,19 @@ const estilos = StyleSheet.create({
         color: '#888',
         marginTop: 30,
         fontSize: 16,
+    },
+    botaoDesejos: {
+        alignItems: 'center',
+        marginVertical: 20,
+    },
+    buttonDesejos: {
+        padding: 20,
+        width: 200,
+        borderRadius: 12,
+    },
+    DesejoText: {
+        fontSize: 20,
+        color: '#fff',
+        textAlign: 'center',
     },
 });

@@ -6,6 +6,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack'; /* 
 import TelaListaDeCamisas from './screens/Catalogo';
 import ListaDetalhesProdutos from './screens/DetalhesProdutos';
 import TelaLogin from './screens/TelaLogin';
+import ListaDesejos from './screens/ListaDesejos';
 
 const Stack = createNativeStackNavigator();
 
@@ -32,6 +33,13 @@ export default function App() {
                     component={ListaDetalhesProdutos}     
                     options={{ title: 'Detalhes do Produto' }}
                 />
+
+                <Stack.Screen 
+                    name='ListaDesejos'
+                    component={ListaDesejos}
+                    options={{ title: 'Lista de Desejos 🌠' }}
+                />
+
             </Stack.Navigator>
         </NavigationContainer>
     );
