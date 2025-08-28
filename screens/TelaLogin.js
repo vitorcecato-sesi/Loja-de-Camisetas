@@ -32,6 +32,8 @@ function TelaLogin({ navigation }) {
     },
   ];
 
+
+  // Função para verificar login
   const realizarLogin = () => {
 
     if (!usuarioDigitado || !senhaDigitada) {
