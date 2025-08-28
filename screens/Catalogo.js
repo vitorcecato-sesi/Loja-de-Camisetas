@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet, RefreshControl, Dimensions, StatusBar, Platform, ActivityIndicator, SafeAreaView, Alert } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import Configuracao from '../components/configuracao';
+
+// Importação para a utilização do storage
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width, height } = Dimensions.get('window');
@@ -12,9 +14,14 @@ function TelaListaDeCamisas({ navigation }) {
     const [loading, setLoading] = useState(true);
     const [nomeUser, setNomeUser] = useState("")
 
+    // Função para carregar dados do AsyncStorage
     const carregarDados = async () => {
-        try {
+        try {   // Tenta carregar os dados
+
+            // Armazena o apelido do usuário
             const apelido = await AsyncStorage.getItem('apelido')
+
+            // Se o apelido existir, atualiza o estado, senão exibe um alerta e define como "Anônimo"
             if (apelido !== null) {
                 setNomeUser(apelido)
                 console.log(apelido)
@@ -23,12 +30,14 @@ function TelaListaDeCamisas({ navigation }) {
                 Alert.alert("Erro", "Nome não encontrado.")
                 setNomeUser("Anonimo")
             }
-        } catch (e) {
+
+        } catch (e) {   // Em caso de erro em buscar, exibe um alerta e o erro no console
             Alert.alert("Erro", 'Erro ao carregar dados.')
             console.error(e)
         }
     }
 
+    // Busca o apelido toda vez que o usuário der um refresh
     useEffect(() => {
         carregarDados()
     }, [refreshing])

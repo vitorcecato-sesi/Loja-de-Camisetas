@@ -11,6 +11,7 @@ import {
   Platform
 } from "react-native";
 
+/* Importação para a utilização do storage */
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
 import { LinearGradient } from "expo-linear-gradient";
@@ -28,11 +29,14 @@ function TelaLogin({ navigation }) {
   const senhaDigitada = watch("senha");
   const apelidoDigitado = watch("apelido")
 
+  // Função para salvar dados no AsyncStorage
   const salvarDados = async () => {
-    try {
+    try { // Tenta salvar os dados
+
+      // Salva o apelido no AsyncStorage
       await AsyncStorage.setItem("apelido", apelidoDigitado);
 
-    } catch (error) {
+    } catch (error) { // Em caso de erro, exibe no console
       console.error("Erro ao salvar dados:", error);
     }
   }
@@ -65,6 +69,7 @@ function TelaLogin({ navigation }) {
 
     setTimeout(() => {
       setCarregando(false);
+      // Chama a função para salvar os dados no AsyncStorage
       salvarDados()
       navigation.navigate('Catalogo');
     }, 3000);

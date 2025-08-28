@@ -10,6 +10,7 @@ import {
   ScrollView,
 } from 'react-native'
 
+// Importação para a utilização do storage
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
@@ -21,9 +22,14 @@ function ListaDetalhesProdutos({ route, navigation }) {
 
   const [apelidoUser, setApelidoUser] = useState("")
 
+  // Função para carregar dados do AsyncStorage
   const carregarDados = async () => {
-    try {
+    try {  // Tenta carregar os dados
+      
+      // Armazena o apelido do usuário
       const apelido = await AsyncStorage.getItem('apelido')
+      
+      // Se o apelido existir, atualiza o estado, senão exibe um alerta e define como "Anônimo"
       if (apelido !== null) {
         setApelidoUser(apelido)
         console.log(apelido)
@@ -32,12 +38,13 @@ function ListaDetalhesProdutos({ route, navigation }) {
         Alert.alert("Erro", "Nome não encontrado.")
         setApelidoUser("Anonimo")
       }
-    } catch (e) {
+    } catch (e) { // Em caso de erro em buscar, exibe um alerta e o erro no console
       Alert.alert("Erro", 'Erro ao carregar dados.')
       console.error(e)
     }
   }
 
+  // Busca o apelido quando o usuário entrar na tela
   useEffect(() => {
     carregarDados()
   }, [])
