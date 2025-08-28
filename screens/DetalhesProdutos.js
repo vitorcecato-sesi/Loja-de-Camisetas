@@ -90,6 +90,7 @@ function ListaDetalhesProdutos({ route, navigation }) {
   }
 
 
+  // Altera a quantidade das camisas
   const alterarQuantidade = (incremento) => {
     const novaQuantidade = quantidade + incremento
 
