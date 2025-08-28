@@ -42,10 +42,12 @@ export default function ListaDesejos() {
         }
     }
 
+    // Recarrega os dados ao dar refreshing
     useEffect(() => {
         carregarDados()
     }, [refreshing])
 
+    // Sistema do refresh
     const onRefresh = () => {
         setRefreshing(true);
         setTimeout(() => {
@@ -53,6 +55,7 @@ export default function ListaDesejos() {
         }, 500);
     };
 
+    // Função para criar bloco de camisas
     const renderizarCamisa = ({ item }) => {
         return (
             <View style={estilos.cardCamisa}>
@@ -67,7 +70,6 @@ export default function ListaDesejos() {
 
     return (
         <SafeAreaView>
-            <View></View>
             <View>
                 <FlatList
                     data={listaDesejos}

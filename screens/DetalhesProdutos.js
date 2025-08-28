@@ -14,8 +14,10 @@ function ListaDetalhesProdutos({ route, navigation }) {
 
   const [apelidoUser, setApelidoUser] = useState("")
 
+  // Lista de Desejos
   const [listaDesejos, setListaDesejos] = useState([])
-
+  
+  // Controle de carregamento de dados 
   const [carregado, setCarregando] = useState(false)
 
   // Função para carregar dados do AsyncStorage
@@ -116,7 +118,10 @@ function ListaDetalhesProdutos({ route, navigation }) {
     }
   }
 
+  // Salva os dados quando forem alterados
   useEffect(() => {
+
+    // Evita erros de salvamentos sem ter carregado os dados
     if (carregado) {
       salvarDados()
     }
@@ -133,8 +138,6 @@ function ListaDetalhesProdutos({ route, navigation }) {
 
     // Criação da nova array com os itens passados e o novo
     const novaLista = [...listaDesejos, produtoSelecionado]
-
-    console.log(`teste: ${novaLista}`)  // Console log para checar informações
 
     // Definindo a nova lista
     setListaDesejos(novaLista)
