@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -15,12 +15,36 @@ import { LinearGradient } from "expo-linear-gradient";
 import { BlurView } from "expo-blur";
 import { TextInput } from "react-native-paper";
 import { useForm, Controller } from "react-hook-form";
+import * as SQLite from 'expo-sqlite';
+
 
 function TelaLogin({ navigation }) {
   const { control, watch } = useForm();
 
   const [erro, setErro] = useState("");
   const [carregando, setCarregando] = useState(false);
+  const [status, setStatus] = useState('Verificando conexão com o banco de dados...');
+
+  useEffect(() => {
+    async function testarConexao() {
+      try {
+        // Abre (ou cria) o banco de dados local
+        const db = await SQLite.openDatabaseAsync('bd_camisas.db');
+        // Executa um comando simples só para testar a conexão
+        await db.execAsync('PRAGMA user_version;');
+        setStatus('✅ Conexão com o banco de dados estabelecida com sucesso!');
+      } catch (error) {
+        // Se der erro, mostra mensagem de erro
+        console.error('Erro na conexão:', error);
+        setStatus('❌ Erro ao conectar com o banco de dados. Veja o log para mais detalhes.');
+      }
+    }
+    testarConexao();
+  }, []);
+
+  let statusColor = '#007bff'; // info padrão
+  if (status.startsWith('✅')) statusColor = '#28a745'; // verde sucesso
+  if (status.startsWith('❌')) statusColor = '#dc3545'; // vermelho erro
 
   const usuarioDigitado = watch("usuario");
   const senhaDigitada = watch("senha");
@@ -59,36 +83,35 @@ function TelaLogin({ navigation }) {
     }, 3000); 
   }
 
+
   return (
     <LinearGradient
-          colors={["#0c3479ff", "#90EE90"]} 
-          style={estilos.tela}
-        >
-        {/*Evita que o teclado sobreponha os campos (iOS e Android)*/}
-    <KeyboardAvoidingView
-      behaivor={Platform.OS === "ios" ? "padding" : "height"}
+      colors={["#0c3479ff", "#90EE90"]}
+      style={estilos.tela}
     >
-      <ScrollView>
-        
-        {/* Permite rolar a tela em dispositivos menores */}
+      {/*Evita que o teclado sobreponha os campos (iOS e Android)*/}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <ScrollView>
+          {/* Permite rolar a tela em dispositivos menores */}
           <View style={estilos.container}>
             <Text style={estilos.titulo}>Time de Craques ⚽</Text>
 
             <BlurView intensity={40} style={estilos.contInp}>
-              
               {/* Área com desfoque para os inputs */}
               <View style={estilos.conInpueTitu}>
                 <Text style={estilos.titInpu}> Faça Login</Text>
 
                 {/* Campo de entrada do usuário */}
                 <Controller
-                  control={control} 
-                  name="usuario" 
+                  control={control}
+                  name="usuario"
                   render={({ field: { onChange, value } }) => (
                     <TextInput
                       label="Usuário"
-                      value={value} 
-                      onChangeText={onChange} 
+                      value={value}
+                      onChangeText={onChange}
                       style={estilos.input}
                     />
                   )}
@@ -96,15 +119,15 @@ function TelaLogin({ navigation }) {
 
                 {/* Campo de entrada da senha */}
                 <Controller
-                  control={control} 
-                  name="senha"     
+                  control={control}
+                  name="senha"
                   render={({ field: { onChange, value } }) => (
                     <TextInput
                       label="Senha"
-                      value={value} 
+                      value={value}
                       onChangeText={onChange}
                       keyboardType="password"
-                      secureTextEntry 
+                      secureTextEntry
                       style={estilos.input}
                     />
                   )}
@@ -130,14 +153,32 @@ function TelaLogin({ navigation }) {
                 <Text style={estilos.textoBotao}>Entrar</Text>
               </TouchableOpacity>
             )}
+
+            {/* Status do banco de dados */}
+            <BlurView intensity={50} tint="light" style={estilos.statusContainer}>
+              <Text style={[estilos.statusText, { color: statusColor }]}>{status}</Text>
+            </BlurView>
           </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
-     </LinearGradient>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </LinearGradient>
   );
 }
 
 const estilos = StyleSheet.create({
+  statusContainer: {
+    marginTop: 20,
+    padding: 15,
+    borderRadius: 20,
+    overflow: 'hidden',
+    width: '95%',
+    alignItems: 'center',
+  },
+  statusText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
   container: {
     justifyContent: "center",
     alignItems: "center",
@@ -159,7 +200,7 @@ const estilos = StyleSheet.create({
     padding: 10,
     borderRadius: 8,
     width: "40%",
-    marginBottom: 200,
+    marginBottom: 20,
   },
   textoBotao: {
     color: "#90EE90",
