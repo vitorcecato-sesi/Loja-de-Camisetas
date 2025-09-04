@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use } from "react";
 import {
   StyleSheet,
   Text,
@@ -9,6 +9,7 @@ import {
   Alert,
   Image,
   TouchableOpacity,
+  RefreshControl,
 } from "react-native";
 import * as SQLite from "expo-sqlite"; // Biblioteca para banco de dados SQLite no Expo
 import { useNavigation } from "@react-navigation/native"; // Hook para navegação entre telas
@@ -31,6 +32,9 @@ export default function App() {
 
   // Estado para mostrar mensagens de status da aplicação (ex: banco pronto, erros)
   const [status, setStatus] = useState("Inicializando...");
+
+  const [carregado, setCarregado] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   // useEffect para inicializar o banco de dados e criar a tabela ao montar o componente
   useEffect(() => {
@@ -56,6 +60,7 @@ export default function App() {
 
         // Atualiza o status para indicar sucesso
         setStatus("✅ Banco de dados e tabela prontos!");
+        setCarregado(true);
       } catch (error) {
         // Em caso de erro, loga no console e mostra alerta para o usuário
         console.error("Erro ao conectar ou criar tabela:", error);
@@ -65,6 +70,24 @@ export default function App() {
     }
     setupDatabase();
   }, []); // Executa apenas uma vez ao montar o componente
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 2000);
+  };
+
+  useEffect(() => {
+    setRefreshing(true);
+  }, [])
+
+  useEffect(() => {
+    if (!refreshing) {
+      exibirTodos();
+    }
+  }, [refreshing]);
+
 
   // Função genérica para executar consultas SQL e atualizar os resultados
   const executarConsulta = async (query, params = []) => {
@@ -157,8 +180,8 @@ export default function App() {
   const statusColor = status.startsWith("✅")
     ? estilos.colors.success
     : status.startsWith("❌")
-    ? estilos.colors.error
-    : estilos.colors.info;
+      ? estilos.colors.error
+      : estilos.colors.info;
 
   return (
     <View style={estilos.container}>
@@ -213,7 +236,15 @@ export default function App() {
       </View>
 
       {/* Lista de camisetas exibidas */}
-      <FlatList
+      {refreshing && <RefreshControl
+        refreshing={refreshing}
+        onRefresh={onRefresh}
+        colors={['#6366f1']}
+        tintColor="#6366f1"
+        title="Atualizando catálogo..."
+      />}
+      
+      {!refreshing && <FlatList
         style={estilos.list}
         contentContainerStyle={estilos.listContent}
         data={results} // Dados da lista
@@ -222,7 +253,7 @@ export default function App() {
         ListEmptyComponent={
           <Text style={estilos.emptyText}>Nenhuma camisa encontrada.</Text>
         } // Texto exibido se a lista estiver vazia
-      />
+      />}
     </View>
   );
 }

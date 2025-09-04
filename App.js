@@ -57,7 +57,7 @@ export default function App() {
 
                 <Stack.Screen 
                     name='ListagemCor'
-                    component={ListagemNome}
+                    component={ListagemCor}
                     options={{ title: 'ListagemCor' }}
                 />
 
