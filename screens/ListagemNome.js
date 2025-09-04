@@ -17,31 +17,39 @@ export default function ListagemNome() {
   const [status, setStatus] = useState("Inicializando...");
   const [temTexto, setTemTexto] = useState(false);
 
+  // --- Efeito para inicializar o banco de dados uma única vez ---
   useEffect(() => {
     async function setupDatabase() {
       try {
-        const database = await SQLite.openDatabaseAsync("bd_camisas.db");
+        // Abrindo o banco de dados de forma segura
+        const database = await SQLite.openDatabaseAsync('bd_camisas.db');
+
+        // Armazenando a referência do banco de dados no estado
         setDb(database);
 
-        await database.execAsync(`(CREATE TABLE IF NOT EXISTS camisetas (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            imagem TEXT NOT NULL,
-            cor TEXT NOT NULL,
-            nome TEXT NOT NULL,
-            preco REAL NOT NULL,
-            time TEXT NOT NULL,
-            descricao TEXT NOT NULL,
-            estoque INTEGER NOT NULL)`);
-        setStatus("✅ Banco de dados e tabela prontos!");
+        // Opcional: Criar a tabela se ela ainda não existir
+        await database.execAsync(`
+            CREATE TABLE IF NOT EXISTS camisetas (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                imagem TEXT NOT NULL,
+                cor TEXT NOT NULL,
+                nome TEXT NOT NULL,
+                preco REAL NOT NULL,
+                time TEXT NOT NULL,
+                descricao TEXT NOT NULL,
+                estoque INTEGER NOT NULL
+            );
+            `);
+        setStatus('✅ Banco de dados e tabela prontos!');
       } catch (error) {
-        console.error("Erro ao conectar ou criar tabela:", error);
-        setStatus("❌ Erro ao inicializar o banco de dados. Veja o log.");
-        Alert.alert("Erro", "Não foi possível conectar ao banco de dados.");
+        console.error('Erro ao conectar ou criar tabela:', error);
+        setStatus('❌ Erro ao inicializar o banco de dados. Veja o log.');
+        Alert.alert('Erro', 'Não foi possível conectar ao banco de dados.');
       }
     }
-
+    // Chamando a função de setup
     setupDatabase();
-  }, []);
+  }, []); // O array vazio garante que isso rode apenas na primeira renderização
 
   const executarConsulta = async (query, params = []) => {
     if (!db) {
@@ -80,8 +88,8 @@ export default function ListagemNome() {
   const corStatus = status.startsWith("✅")
     ? estilos.cores.sucesso
     : status.startsWith("❌")
-    ? estilos.cores.erro
-    : estilos.cores.texto;
+      ? estilos.cores.erro
+      : estilos.cores.texto;
 
   return (
     <View style={estilos.tela}>

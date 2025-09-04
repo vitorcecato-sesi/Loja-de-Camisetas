@@ -8,22 +8,24 @@ import {
   ScrollView,
   TextInput,
   Button,
+  Alert,
 } from 'react-native';
 import * as SQLite from 'expo-sqlite';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 let db = null;
 
-const nomeBancoDados = 'bd_camisetas.db';
-const nomeTabelaDados = 'camisetas';
-
 async function openDb() {
   if (db) return db;
-  db = await SQLite.openDatabaseAsync(`${nomeBancoDados}`);
+  db = await SQLite.openDatabaseAsync('bd_camisas.db');
   return db;
 }
 
+
 export default function Menu({ navigation }) {
+  const nomeTabelaDados = 'camisetas';
+
+
   const [nomeUser, setNomeUser] = useState('');
   const [refreshing, setRefreshing] = useState(false);
 
@@ -38,8 +40,8 @@ export default function Menu({ navigation }) {
   const [cor, setCor] = useState('');
 
   const adicionarCamisa = async () => {
-    const PrecoConvertido = Number(preco) || 0;
-    const EstoqueConvertido = Number(estoque) || 0;
+    const PrecoConvertido = Number(preco)
+    const EstoqueConvertido = Number(estoque)
 
     if (
       !nome.trim() ||
@@ -48,9 +50,10 @@ export default function Menu({ navigation }) {
       !descricao.trim() ||
       EstoqueConvertido == 0 ||
       !time.trim() ||
-      cor.trim()
+      !cor.trim()
     ) {
       Alert.alert('Erro', 'Por favor, preencha todos os campos.');
+      console.log(nome, PrecoConvertido, imagem, descricao, EstoqueConvertido, time, cor);
       return;
     }
 
