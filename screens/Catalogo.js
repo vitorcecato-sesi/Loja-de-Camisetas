@@ -11,8 +11,10 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import * as SQLite from 'expo-sqlite';
+import { useNavigation } from '@react-navigation/native';
 
 export default function App() {
+  const navigation = useNavigation();
   // Estado para armazenar a conexão com o banco de dados
   const [db, setDb] = useState(null);
 
@@ -21,6 +23,7 @@ export default function App() {
 
   // Estado para os campos de pesquisa
   const [searchText, setSearchText] = useState('');
+  const [searchCor, setSearchCor] = useState('');
 
   // Estado para a mensagem de status
   const [status, setStatus] = useState('Inicializando...');
@@ -90,27 +93,42 @@ export default function App() {
     ]);
   };
 
-  // Função para abrir detalhes da camisa (exemplo simples)
-  const abrirDetalhesCamisa = (item) => {
-    Alert.alert(
-      item.nome,
-      `Descrição: ${item.descricao}\nCor: ${item.cor}\nTime: ${item.time}\nEstoque: ${item.estoque}\nPreço: R$ ${item.preco.toFixed(2)}`
-    );
+  const pesquisarCor = () => {
+    if (!searchCor.trim()) {
+      Alert.alert('Aviso', 'Digite uma cor para pesquisar.');
+      return;
+    }
+    executarConsulta('SELECT * FROM camisetas WHERE cor LIKE ?;', [
+      `%${searchCor}%`,
+    ]);
+  };
+
+  const abrirDetalhesCamisa = (camisa) => {
+    const produtoNormalizado = {    
+      ...camisa,
+      imagem: (camisa.imagem || '').trim(),
+      descricao: camisa.descricao || 'Descrição não disponível.', 
+      categoria: camisa.categoria || 'Camiseta de time',  
+      estoque: typeof camisa.estoque === 'number' ? camisa.estoque : 0,   
+      avaliacoes: camisa.avaliacoes || 0,
+    };
+    navigation.navigate('DetalhesCamisas', {
+      produtoSelecionado: produtoNormalizado,
+      origemNavegacao: 'lista_camisas',
+      timestampVisita: Date.now()
+    });
   };
 
   // Renderização do item da lista
   const renderItem = ({ item }) => (
-    <TouchableOpacity
-      style={estilos.cardCamisa}
-      onPress={() => abrirDetalhesCamisa(item)}
-    >
-      <Image source={{ uri: item.imagem }} style={estilos.imagemCamisa} />
-      <View style={estilos.infoCamisa}>
-        <Text style={estilos.nomeCamisa}>{item.nome}</Text>
-        <Text style={estilos.precoCamisa}>R$ {item.preco.toFixed(2)}</Text>
-      </View>
-    </TouchableOpacity>
-  );
+  <TouchableOpacity style={estilos.cardCamisa} onPress={() => abrirDetalhesCamisa(item)}>
+    <Image source={{ uri: item.imagem }} style={estilos.imagemCamisa} />
+    <View style={estilos.infoCamisa}>
+      <Text style={estilos.nomeCamisa}>{item.nome}</Text>
+      <Text style={estilos.precoCamisa}>R$ {item.preco.toFixed(2)}</Text>
+    </View>
+  </TouchableOpacity>
+);
 
   // Cor dinâmica para o status
   const statusColor = status.startsWith('✅')
@@ -135,6 +153,14 @@ export default function App() {
           onChangeText={setSearchText}
         />
 
+        <TextInput
+          style={estilos.input}
+          placeholder="Cor"
+          placeholderTextColor="#9AA4B2"
+          value={searchCor}
+          onChangeText={setSearchCor}
+        />
+
         <View style={estilos.buttonContainer}>
           <View style={estilos.btnWrapper}>
             <Button title="Exibir Todos" onPress={exibirTodos} disabled={!db} />
@@ -143,6 +169,13 @@ export default function App() {
             <Button
               title="Pesquisar Nome"
               onPress={pesquisarNome}
+              disabled={!db}
+            />
+          </View>
+          <View style={estilos.btnWrapper}>
+            <Button
+              title="Pesquisar Cor"
+              onPress={pesquisarCor}
               disabled={!db}
             />
           </View>
