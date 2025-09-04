@@ -186,8 +186,8 @@ function ListaDetalhesProdutos({ route, navigation }) {
   const idCamisa = (produtoSelecionado.id || '')
   const [erroSQLite, setErroSQLite] = useState('')
 
-  const nomeBancoDados = 'db_camisas.db'
-  const nomeTabelaDados = 'camisas'
+  const nomeBancoDados = 'bd_camisas.db'
+  const nomeTabelaDados = 'camisetas'
 
 
   // UPDATE
@@ -335,7 +335,7 @@ function ListaDetalhesProdutos({ route, navigation }) {
         {/* Botões do SQLite */}
 
         <View>
-          <TouchableOpacity style={{ ...estilos.botaoComprar, backgroundColor: '#76fc68' }} onPress={() => { atualizarCamisa() }}>
+          <TouchableOpacity style={{ ...estilos.botaoComprar, backgroundColor: '#76fc68' }} onPress={() => { setModalVisivel(true) }}>
             <Text style={estilos.textoBotaoComprar}>Atualizar</Text>
           </TouchableOpacity>
 
@@ -421,7 +421,7 @@ function ListaDetalhesProdutos({ route, navigation }) {
               value={estoqueCamisa}
               onChangeText={setEstoqueCamisa()}
             />
-            <Button title="Adicionar Camisa" onPress={adicionarCamisa} />
+            <Button title="Adicionar Camisa" onPress={() => atualizarCamisa()} />
           </ScrollView>
 
           <TouchableOpacity

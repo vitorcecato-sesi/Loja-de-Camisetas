@@ -138,7 +138,7 @@ function TelaLogin({ navigation }) {
       setCarregando(false);
       // Chama a função para salvar os dados no AsyncStorage
       salvarDados()
-      navigation.navigate('Catalogo');
+      navigation.navigate('Menu');
     }, 3000);
   }
 

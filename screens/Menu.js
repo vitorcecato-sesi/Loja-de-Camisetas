@@ -63,8 +63,14 @@ export default function Menu({ navigation }) {
 
       Alert.alert('Sucesso', 'Camisa adicionada com sucesso! 🚀');
       setNome('');
-      setSalario('');
-      setCargo('');
+      setCor('');
+      setDescricao('');
+      setDescricao('');
+      setEstoque('');
+      setImagem('');
+      setPreco('');
+      setTime('');
+      setModalVisivel(false);
     } catch (error) {
       Alert.alert('Erro', 'Falha ao adicionar camisa. 😢');
       console.error('Erro ao inserir:', error);

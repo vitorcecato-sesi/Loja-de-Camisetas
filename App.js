@@ -7,6 +7,8 @@ import TelaListaDeCamisas from './screens/Catalogo';
 import ListaDetalhesProdutos from './screens/DetalhesProdutos';
 import TelaLogin from './screens/TelaLogin';
 import ListaDesejos from './screens/ListaDesejos';
+import Menu from './screens/Menu';
+import ListagemNome from './screens/ListagemNome';
 
 const Stack = createNativeStackNavigator();
 
@@ -38,6 +40,18 @@ export default function App() {
                     name='ListaDesejos'
                     component={ListaDesejos}
                     options={{ title: 'Lista de Desejos 🌠' }}
+                />
+
+                <Stack.Screen 
+                    name='Menu'
+                    component={Menu}
+                    options={{ title: 'Menu' }}
+                />
+
+                <Stack.Screen 
+                    name='ListagemNome'
+                    component={ListagemNome}
+                    options={{ title: 'ListagemNome' }}
                 />
 
             </Stack.Navigator>
