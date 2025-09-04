@@ -1,383 +1,369 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity, Image, Pressable, StyleSheet, RefreshControl, Dimensions, StatusBar, Platform, ActivityIndicator, SafeAreaView, Alert } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
-import Configuracao from '../components/configuracao';
+import React, { useState, useEffect } from "react";
+import {
+  StyleSheet,
+  Text,
+  View,
+  TextInput,
+  Button,
+  FlatList,
+  Alert,
+  Image,
+  TouchableOpacity,
+} from "react-native";
+import * as SQLite from "expo-sqlite"; // Biblioteca para banco de dados SQLite no Expo
+import { useNavigation } from "@react-navigation/native"; // Hook para navegação entre telas
 
-// Importação para a utilização do storage
-import AsyncStorage from '@react-native-async-storage/async-storage';
+export default function App() {
+  // Obtém o objeto navigation para navegação entre telas
+  const navigation = useNavigation();
 
-const { width, height } = Dimensions.get('window');
+  // Estado para armazenar a conexão com o banco de dados SQLite
+  const [db, setDb] = useState(null);
 
-function TelaListaDeCamisas({ navigation }) {
-    const [refreshing, setRefreshing] = useState(false);
-    const [timeSelecionado, setTimeSelecionado] = useState('todos');
-    const [loading, setLoading] = useState(true);
-    const [nomeUser, setNomeUser] = useState("")
+  // Estado para armazenar os resultados das consultas SQL (lista de camisetas)
+  const [results, setResults] = useState([]);
 
-    // Função para carregar dados do AsyncStorage
-    const carregarDados = async () => {
-        try {   // Tenta carregar os dados
+  // Estado para armazenar o texto digitado no campo de pesquisa por nome
+  const [searchText, setSearchText] = useState("");
 
-            // Armazena o apelido do usuário
-            const apelido = await AsyncStorage.getItem('apelido')
+  // Estado para armazenar o texto digitado no campo de pesquisa por cor
+  const [searchCor, setSearchCor] = useState("");
 
-            // Se o apelido existir, atualiza o estado, senão exibe um alerta e define como "Anônimo"
-            if (apelido !== null) {
-                setNomeUser(apelido)
-                console.log(apelido)
-            }
-            else {
-                Alert.alert("Erro", "Nome não encontrado.")
-                setNomeUser("Anonimo")
-            }
+  // Estado para mostrar mensagens de status da aplicação (ex: banco pronto, erros)
+  const [status, setStatus] = useState("Inicializando...");
 
-        } catch (e) {   // Em caso de erro em buscar, exibe um alerta e o erro no console
-            Alert.alert("Erro", 'Erro ao carregar dados.')
-            console.error(e)
-        }
+  // useEffect para inicializar o banco de dados e criar a tabela ao montar o componente
+  useEffect(() => {
+    async function setupDatabase() {
+      try {
+        // Abre (ou cria) o banco de dados local bd_camisas.db
+        const database = await SQLite.openDatabaseAsync("bd_camisas.db");
+        setDb(database); // Salva a conexão no estado
+
+        // Cria a tabela camisetas caso ela não exista ainda
+        await database.execAsync(`
+          CREATE TABLE IF NOT EXISTS camisetas (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            imagem TEXT NOT NULL,
+            cor TEXT NOT NULL,
+            nome TEXT NOT NULL,
+            preco REAL NOT NULL,
+            time TEXT NOT NULL,
+            descricao TEXT NOT NULL,
+            estoque INTEGER NOT NULL
+          );
+        `);
+
+        // Atualiza o status para indicar sucesso
+        setStatus("✅ Banco de dados e tabela prontos!");
+      } catch (error) {
+        // Em caso de erro, loga no console e mostra alerta para o usuário
+        console.error("Erro ao conectar ou criar tabela:", error);
+        setStatus("❌ Erro ao inicializar o banco de dados. Veja o log.");
+        Alert.alert("Erro", "Não foi possível conectar ao banco de dados.");
+      }
+    }
+    setupDatabase();
+  }, []); // Executa apenas uma vez ao montar o componente
+
+  // Função genérica para executar consultas SQL e atualizar os resultados
+  const executarConsulta = async (query, params = []) => {
+    if (!db) {
+      // Se o banco não estiver pronto, avisa o usuário
+      Alert.alert("Erro", "O banco de dados não está pronto.");
+      return;
     }
 
-    // Busca o apelido toda vez que o usuário der um refresh
-    useEffect(() => {
-        carregarDados()
-    }, [refreshing])
+    try {
+      // Executa a consulta SQL com os parâmetros fornecidos
+      const rows = await db.getAllAsync(query, params);
+      setResults(rows); // Atualiza o estado com os resultados
 
-    useEffect(() => {
-
-        const timer = setTimeout(() => setLoading(false), 1200);
-        return () => clearTimeout(timer);
-    }, []);
-
-
-    const onRefresh = () => {
-        setRefreshing(true);
-        setTimeout(() => {
-            setRefreshing(false);
-        }, 500);
-    };
-
-
-    const camisas = [
-        {
-            id: 1,
-            nome: 'Camisa Mirassol',
-            preco: 249.99,
-            imagem: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgy05GWcIrMmRYRd5DceIE1FcuRdxpa4vVPWmFnrhOoLC7wpQknIsPeKUp2lO9ILOlrmBtNAKrmjsHPidyOzKdmkT0zVTpELm_wPk3V4U1y9adLRGVdhFHiOmBebsIFCFR2tZhdjt0lUSTP/s1600/Mirassol+2020+1.png',
-            descricao: 'Camisa do Mirassol: amarela vibrante com detalhes verdes e o leão no escudo destacando a identidade do clube',
-            estoque: 15,
-            time: 'Mirassol',
-        },
-        {
-            id: 2,
-            nome: 'Camisa Palmeiras',
-            preco: 499.99,
-            imagem: 'https://www.mundodofutebol.com.br/lojas/00057707/prod/palmeiraawe.png',
-            descricao: 'Camisa do Palmeiras: verde tradicional com detalhes brancos e o escudo alviverde simbolizando tradição e glórias',
-            estoque: 8,
-            time: 'Palmeiras',
-        },
-        {
-            id: 3,
-            nome: 'Camisa São Paulo',
-            preco: 350.00,
-            imagem: 'https://acdn-us.mitiendanube.com/stores/002/265/580/products/1-removebg-preview-61-3c145f7fc21634815716862426061398-640-0.png',
-            descricao: 'Camisa do São Paulo: branca com faixas horizontais vermelha e preta no peito, destacando o escudo tricolor',
-            estoque: 30,
-            time: 'São Paulo',
-        },
-        {
-            id: 4,
-            nome: 'Camisa Grêmio',
-            preco: 199.99,
-            imagem: 'https://gremio1903.wordpress.com/wp-content/uploads/2011/01/grc3aamiofrente.png?w=584',
-            descricao: 'Camisa do Grêmio: listrada em azul, preto e branco, com o escudo tricolor centralizado no peito.',
-            estoque: 32,
-            time: 'Grêmio',
-        },
-        {
-            id: 5,
-            nome: 'Camisa Vasco',
-            preco: 599.99,
-            imagem: 'https://webshop.vteximg.com.br/arquivos/ids/213214-1000-1000/M_0105_00200632002.png?v=638579612893500000',
-            descricao: ' Camisa do Vasco: preta com detalhes em branco e o icônico escudo cruzmaltino, simbolizando tradição e paixão.',
-            estoque: 28,
-            time: 'Vasco',
-        },
-        {
-            id: 6,
-            nome: 'Camisa Santos',
-            preco: 159.99,
-            imagem: 'https://dasports.com.br/cdn/shop/files/Santos-Comemorativa_24_25_1_1024x.png?v=1749439987',
-            descricao: ' Camisa do Santos: branca com detalhes em preto e o escudo do peixe, representando a história e a tradição do clube.',
-            estoque: 18,
-            time: 'Santos',
-        },
-        {
-            id: 7,
-            nome: 'Corinthians',
-            preco: 1.99,
-            imagem: 'https://www.futebolreligiao.com.br/image/cache/catalog/Corinthians/Camisa%20III%20Corinthians%202024%20Third-900x900.png',
-            descricao: '    Camisa do Corinthians: branca com detalhes em preto e o famoso escudo alvinegro, simbolizando a força e a paixão da torcida.',
-            estoque: 10,
-            time: 'Corinthians',
-        },
-        {
-            id: 8,
-            nome: 'Camisa Bahia',
-            preco: 292.99,
-            imagem: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjWOxai7wqz-fesnAPAWMRIwR_GHFB8s-RCRwa23okJ3JTeM9Jypbu6O4k32WBTsWTz3x6TaJ-A_V2lehjeLKdIySZufs7nBha454QSiisxd5VV1FDXtDKFVlWyi-kxJtVxL9DUT3P20e8/s1600/Bahia+2014+2.png',
-            descricao: ' Camisa do Bahia: azul e vermelho com listras horizontais, destacando o escudo tricolor e a tradição do clube baiano.',
-            estoque: 11,
-            time: 'Bahia',
-        },
-        {
-            id: 9,
-            nome: 'Camisa Fluminense',
-            preco: 250.00,
-            imagem: 'https://fluminense.vteximg.com.br/arquivos/ids/158648-1000-1000/FPON9VgXsAAiUqm-removebg-preview.png?v=637844182303130000',
-            descricao: ' Camisa do Fluminense: verde, branco e grená com listras verticais, destacando o escudo tricolor e a história do clube carioca.',
-            estoque: 15,
-            time: 'Fluminense',
-        },
-        {
-            id: 10,
-            nome: 'Flamengo',
-            preco: 499.99,
-            imagem: 'https://www.camarotedotorcedor.com.br/wp-content/uploads/2025/03/m_0115_00100724113_1_2.png',
-            descricao: ' Camisa do Flamengo: vermelha e preta com listras horizontais, destacando o escudo rubro-negro e a paixão da torcida carioca.',
-            estoque: 8,
-            time: 'Flamengo',
-        },
-    ];
-
-
-    const times = [
-        'todos',
-        ...Array.from(new Set(camisas.map(c => c.time))),
-    ];
-
-    const camisasFiltradas = timeSelecionado === 'todos'
-        ? camisas
-        : camisas.filter(c => c.time === timeSelecionado)
-
-    const abrirDetalhesCamisa = (camisa) => {
-
-        const produtoNormalizado = {
-            ...camisa,
-            imagem: (camisa.imagem || '').trim(),
-            descricao: camisa.descricao || 'Descrição não disponível.',
-            categoria: camisa.categoria || 'Camiseta de time',
-            estoque: typeof camisa.estoque === 'number' ? camisa.estoque : 0,
-            avaliacoes: camisa.avaliacoes || 0,
-        };
-
-
-        navigation.navigate('DetalhesCamisas', {
-            produtoSelecionado: produtoNormalizado,
-            origemNavegacao: 'lista_camisas',
-            timestampVisita: Date.now()
-        });
-    };
-
-
-    const renderizarCamisa = ({ item }) => {
-        return (
-            <TouchableOpacity style={estilos.cardCamisa} onPress={() => abrirDetalhesCamisa(item)}>
-                <Image source={{ uri: item.imagem }} style={estilos.imagemCamisa} />
-                <View style={estilos.infoCamisa}>
-                    <Text style={estilos.nomeCamisa}>{item.nome}</Text>
-                    <Text style={estilos.precoCamisa}>R$ {item.preco.toFixed(2)}</Text>
-                </View>
-            </TouchableOpacity >
-        )
-    };
-
-
-    if (loading) {
-        return (
-            <>
-                <StatusBar
-                    barStyle={Platform.OS === 'ios' ? 'dark-content' : 'light-content'}
-                    backgroundColor={Platform.OS === 'android' ? 'transparent' : 'transparent'}
-                    translucent={Platform.OS === 'android'}
-                />
-                <View style={estilos.loadingContainer}>
-                    <ActivityIndicator size="large" color="#6366f1" />
-                    <Text style={estilos.loadingText}>Carregando catálogo...</Text>
-                </View>
-            </>
-        );
+      // Se não encontrou nenhum resultado, avisa o usuário
+      if (rows.length === 0) {
+        Alert.alert("Aviso", "Nenhum resultado encontrado.");
+      }
+    } catch (error) {
+      // Em caso de erro na consulta, mostra alerta e loga no console
+      Alert.alert("Erro", "Falha na consulta. Verifique o console.");
+      console.error("Erro na consulta:", error);
     }
+  };
 
-    return (
-        <SafeAreaView style={{ flex: 1, backgroundColor: '#f5f5f5' }}>
-            <StatusBar
-                barStyle={Platform.OS === 'ios' ? 'dark-content' : 'light-content'}
-                backgroundColor={Platform.OS === 'android' ? '#6366f1' : 'transparent'}
-                translucent={Platform.OS === 'android'}
+  // Função para exibir todas as camisetas cadastradas
+  const exibirTodos = async () => {
+    await executarConsulta("SELECT * FROM camisetas;");
+  };
+
+  // Função para pesquisar camisetas pelo nome (LIKE %searchText%)
+  const pesquisarNome = async () => {
+    if (!searchText.trim()) {
+      Alert.alert("Aviso", "Digite um nome para pesquisar.");
+      return;
+    }
+    await executarConsulta("SELECT * FROM camisetas WHERE nome LIKE ?;", [
+      `%${searchText}%`, // É necessário usar % para o operador LIKE que é o método dentro do SQLite
+    ]);
+  };
+
+  // Função para pesquisar camisetas pela cor (LIKE %searchCor%)
+  const pesquisarCor = () => {
+    if (!searchCor.trim()) {
+      Alert.alert("Aviso", "Digite uma cor para pesquisar.");
+      return;
+    }
+    executarConsulta("SELECT * FROM camisetas WHERE cor LIKE ?;", [
+      `%${searchCor}%`, // É necessário usar % para o operador LIKE que é o método dentro do SQLite
+    ]);
+  };
+
+  // Função para abrir a tela de detalhes da camisa selecionada
+  const abrirDetalhesCamisa = (camisa) => {
+    // Normaliza os dados do produto para evitar erros
+    const produtoNormalizado = {
+      ...camisa,
+      imagem: (camisa.imagem || "").trim(), // Remove espaços extras da URL da imagem
+      descricao: camisa.descricao || "Descrição não disponível.",
+      categoria: camisa.categoria || "Camiseta de time",
+      estoque: typeof camisa.estoque === "number" ? camisa.estoque : 0,
+      avaliacoes: camisa.avaliacoes || 0,
+    };
+
+    // Navega para a tela 'DetalhesCamisas' passando os dados do produto e outras infos
+    navigation.navigate("DetalhesCamisas", {
+      produtoSelecionado: produtoNormalizado,
+      origemNavegacao: "lista_camisas",
+      timestampVisita: Date.now(),
+    });
+  };
+
+  // Função para renderizar cada item da lista de camisetas
+  const renderItem = ({ item }) => (
+    <TouchableOpacity
+      style={estilos.cardCamisa}
+      onPress={() => abrirDetalhesCamisa(item)} // Ao tocar, abre detalhes da camisa
+    >
+      {/* Imagem da camisa */}
+      <Image source={{ uri: item.imagem }} style={estilos.imagemCamisa} />
+      {/* Informações da camisa */}
+      <View style={estilos.infoCamisa}>
+        <Text style={estilos.nomeCamisa}>{item.nome}</Text>
+        <Text style={estilos.precoCamisa}>R$ {item.preco.toFixed(2)}</Text>
+      </View>
+    </TouchableOpacity>
+  );
+
+  // Define a cor do texto de status dinamicamente conforme o status atual
+  const statusColor = status.startsWith("✅")
+    ? estilos.colors.success
+    : status.startsWith("❌")
+    ? estilos.colors.error
+    : estilos.colors.info;
+
+  return (
+    <View style={estilos.container}>
+      {/* Cabeçalho com título e status */}
+      <View style={estilos.headerCard}>
+        <Text style={estilos.title}>Catálogo</Text>
+        <Text style={[estilos.statusText, { color: statusColor }]}>
+          {status}
+        </Text>
+      </View>
+
+      {/* Área de pesquisa */}
+      <View style={estilos.searchCard}>
+        {/* Input para pesquisar por nome */}
+        <TextInput
+          style={estilos.input}
+          placeholder="Nome"
+          placeholderTextColor="#9AA4B2"
+          value={searchText}
+          onChangeText={setSearchText}
+        />
+
+        {/* Input para pesquisar por cor */}
+        <TextInput
+          style={estilos.input}
+          placeholder="Cor"
+          placeholderTextColor="#9AA4B2"
+          value={searchCor}
+          onChangeText={setSearchCor}
+        />
+
+        {/* Botões para executar as ações de pesquisa e exibição */}
+        <View style={estilos.buttonContainer}>
+          <View style={estilos.btnWrapper}>
+            <Button title="Exibir Todos" onPress={exibirTodos} disabled={!db} />
+          </View>
+          <View style={estilos.btnWrapper}>
+            <Button
+              title="Pesquisar Nome"
+              onPress={pesquisarNome}
+              disabled={!db}
             />
-            <View style={estilos.statusBarFalsa} />
-            <View style={estilos.container}>
-                <Text style={estilos.titulo}>Catálogo de Camisas</Text>
-                <Text style={{ textAlign: 'center', fontWeight: 'bold', fontSize: 15, color: '#3300ffff' }}>Bem vindo(a), {nomeUser}</Text>
-                <View style={estilos.botaoDesejos}>
-                    <Pressable
-                        title={"ListaDesejos"}
-                        style={({ pressed }) => [
-                            estilos.buttonDesejos,
-                            {
-                                backgroundColor: pressed ? "#d1c4e9" : "#673ab7",
-                                padding: 5,
-                                width: width * 0.4,
-                                borderRadius: 12,
-                            }
-                        ]}
-                        onPress={() => navigation.navigate('ListaDesejos')}
-                    >
-                        <Text style={{ ...estilos.DesejoText, fontSize: 15, fontWeight: 'bold' }}>
-                            Lista de Desejos
-                        </Text>
-                    </Pressable>
-                </View>
-                <Configuracao />
-                <View style={estilos.pickerContainer}>
-                    <Text style={estilos.pickerLabel}>Filtrar por time:</Text>
-                    <Picker
-                        selectedValue={timeSelecionado}
-                        style={estilos.picker}
-                        onValueChange={(itemValue) => setTimeSelecionado(itemValue)}
-                        mode="dropdown"
-                        dropdownIconColor="#6366f1"
-                    >
-                        {times.map((time, idx) => (
-                            <Picker.Item key={idx} label={time.charAt(0).toUpperCase() + time.slice(1)} value={time} />
-                        ))}
-                    </Picker>
-                </View>
-                <FlatList
-                    data={camisasFiltradas}
-                    keyExtractor={(item) => item.id.toString()}
-                    renderItem={renderizarCamisa}
-                    numColumns={2}
-                    showsVerticalScrollIndicator={false}
-                    columnWrapperStyle={estilos.linhaCamisas}
-                    refreshControl={
-                        <RefreshControl
-                            refreshing={refreshing}
-                            onRefresh={onRefresh}
-                            colors={['#6366f1']}
-                            tintColor="#6366f1"
-                            title="Atualizando catálogo..."
-                        />
-                    }
-                    ListEmptyComponent={
-                        <Text style={estilos.semCamisas}>Nenhuma camisa encontrada para o filtro selecionado.</Text>
-                    }
-                />
-            </View>
-        </SafeAreaView>
-    );
+          </View>
+          <View style={estilos.btnWrapper}>
+            <Button
+              title="Pesquisar Cor"
+              onPress={pesquisarCor}
+              disabled={!db}
+            />
+          </View>
+        </View>
+      </View>
+
+      {/* Lista de camisetas exibidas */}
+      <FlatList
+        style={estilos.list}
+        contentContainerStyle={estilos.listContent}
+        data={results} // Dados da lista
+        renderItem={renderItem} // Função para renderizar cada item
+        keyExtractor={(item) => item.id.toString()} // Chave única para cada item
+        ListEmptyComponent={
+          <Text style={estilos.emptyText}>Nenhuma camisa encontrada.</Text>
+        } // Texto exibido se a lista estiver vazia
+      />
+    </View>
+  );
 }
 
-export default TelaListaDeCamisas;
-
+// Estilos da aplicação
 const estilos = StyleSheet.create({
-    loadingContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#f5f5f5',
-    },
-    loadingText: {
-        marginTop: 16,
-        fontSize: 18,
-        color: '#007AFF',
-        fontWeight: 'bold',
-    },
-    container: {
-        flex: 1,
-        backgroundColor: '#f5f5f5',
-        padding: 10,
-    },
-    titulo: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: '#6366f1',
-        padding: 12,
-        marginBottom: 10,
-        textAlign: 'center',
-    },
-    pickerContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 12,
-        backgroundColor: '#fff',
-        borderRadius: 8,
-        paddingHorizontal: 8,
-        elevation: 2,
-    },
-    pickerLabel: {
-        fontSize: 16,
-        color: '#6366f1',
-        fontWeight: 'bold',
-        marginRight: 8,
-    },
-    picker: {
-        flex: 1,
-        color: '#222',
-        height: 60,
-    },
-    linhaCamisas: {
-        justifyContent: 'space-between',
-    },
-    cardCamisa: {
-        backgroundColor: '#fff',
-        borderRadius: 10,
-        padding: 10,
-        marginBottom: 16,
-        width: '48%',
-        alignItems: 'center',
-        elevation: 2,
-    },
-    imagemCamisa: {
-        width: width * 0.4,
-        height: height * 0.2,
-        borderRadius: 8,
-        marginBottom: 10,
-        backgroundColor: 'white',
-    },
-    infoCamisa: {
-        alignItems: 'center',
-    },
-    nomeCamisa: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: '#222',
-        textAlign: 'center',
-    },
-    precoCamisa: {
-        fontSize: 15,
-        color: '#27ae60',
-        marginTop: 4,
-    },
-    semCamisas: {
-        textAlign: 'center',
-        color: '#888',
-        marginTop: 30,
-        fontSize: 16,
-    },
-    botaoDesejos: {
-        alignItems: 'center',
-        marginVertical: 20,
-    },
-    buttonDesejos: {
-        padding: 20,
-        width: 200,
-        borderRadius: 12,
-    },
-    DesejoText: {
-        fontSize: 20,
-        color: '#fff',
-        textAlign: 'center',
-    },
+  colors: {
+    background: "#F3F7FB",
+    card: "#FFFFFF",
+    primary: "#2563EB",
+    info: "#0EA5E9",
+    success: "#16A34A",
+    error: "#DC2626",
+    muted: "#6B7280",
+    text: "#0F1724",
+  },
+
+  container: {
+    flex: 1,
+    backgroundColor: "#F3F7FB",
+    paddingHorizontal: 16,
+    paddingTop: 40,
+    paddingBottom: 21,
+  },
+
+  headerCard: {
+    backgroundColor: "#fff",
+    borderRadius: 14,
+    paddingVertical: 20,
+    paddingHorizontal: 16,
+    marginBottom: 16,
+    shadowColor: "#0b1724",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 3,
+    alignItems: "center",
+  },
+
+  title: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#0F1724",
+    marginBottom: 6,
+    textAlign: "center",
+  },
+
+  statusText: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#64748B",
+  },
+
+  searchCard: {
+    backgroundColor: "#fff",
+    borderRadius: 14,
+    padding: 16,
+    marginBottom: 18,
+    shadowColor: "#0b1724",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.03,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+
+  input: {
+    height: 48,
+    backgroundColor: "#F9FBFD",
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#DCE7F3",
+    paddingHorizontal: 14,
+    fontSize: 15,
+    color: "#0F1724",
+    marginBottom: 12,
+  },
+
+  buttonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 4,
+  },
+
+  btnWrapper: {
+    flex: 1,
+    marginHorizontal: 4,
+  },
+
+  list: {
+    flex: 1,
+  },
+
+  listContent: {
+    paddingBottom: 24,
+  },
+
+  emptyText: {
+    textAlign: "center",
+    color: "#64748B",
+    fontSize: 14,
+    marginTop: 20,
+  },
+
+  // Estilos do card da camisa
+  cardCamisa: {
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 12,
+    marginBottom: 16,
+    flexDirection: "row", // Alinha imagem e texto na horizontal
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 6,
+  },
+
+  imagemCamisa: {
+    width: 100,
+    height: 100,
+    borderRadius: 12,
+    backgroundColor: "#f0f0f0", // Cor de fundo enquanto a imagem carrega
+  },
+
+  infoCamisa: {
+    flex: 1,
+    marginLeft: 16,
+    justifyContent: "center",
+  },
+
+  nomeCamisa: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#1E293B",
+    marginBottom: 6,
+  },
+
+  precoCamisa: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#2563EB",
+  },
 });

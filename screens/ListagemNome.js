@@ -3,50 +3,45 @@ import {StyleSheet,Text,View,TextInput,TouchableOpacity,FlatList, Alert} from "r
 import * as SQLite from "expo-sqlite";// Importa biblioteca SQLite do Expo para banco de dados local
 
 export default function ListagemNome() {
-  const [db, setDb] = useState(null); // Estado que armazena a conexão com o banco de dados
-  const [resultados, setResultados] = useState([]); // Estado que guarda os resultados das consultas SQL
-  const [nomeCamisa, setNomeCamisa] = useState(""); // Estado que guarda o texto digitado no campo de pesquisa
-  const [status, setStatus] = useState("Inicializando..."); // Estado que guarda o status do app (carregando, sucesso, erro)
-  const [temTexto, setTemTexto] = useState(false); // Estado para indicar se o campo de pesquisa tem algum texto
+  const [db, setDb] = useState(null);
+  const [resultados, setResultados] = useState([]);
+  const [nomeCamisa, setNomeCamisa] = useState("");
+  const [status, setStatus] = useState("Inicializando...");
+  const [temTexto, setTemTexto] = useState(false);
 
+  // --- Efeito para inicializar o banco de dados uma única vez ---
   useEffect(() => {
     async function setupDatabase() {  // Função assíncrona para criar/abrir banco e tabela
       try {
-        const database = await SQLite.openDatabaseAsync("bd_camisas.db"); // Abre ou cria banco de dados chamado "bd_camisas.db"
-        setDb(database);// salva o objeto do banco no estado
+        // Abrindo o banco de dados de forma segura
+        const database = await SQLite.openDatabaseAsync('bd_camisas.db');
 
-        // Cria tabela "camisetas" se não existir
-        // id: chave primária auto increment
-        // imagem: URL ou caminho da imagem da camiseta
-        // cor: cor da camiseta
-        // nome: nome da camiseta
-        // preco: preço
-        // time: time relacionado
-        // descricao: descrição da camiseta
-        // estoque: quantidade em estoque
+        // Armazenando a referência do banco de dados no estado
+        setDb(database);
 
-        await database.execAsync(`CREATE TABLE IF NOT EXISTS camisetas (   
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            imagem TEXT NOT NULL,
-            cor TEXT NOT NULL,
-            nome TEXT NOT NULL,
-            preco REAL NOT NULL,
-            time TEXT NOT NULL,
-            descricao TEXT NOT NULL,
-            estoque INTEGER NOT NULL`);
-    // Atualiza o status para mostrar que banco e tabela estão prontos
-        setStatus("✅ Banco de dados e tabela prontos!");
+        // Opcional: Criar a tabela se ela ainda não existir
+        await database.execAsync(`
+            CREATE TABLE IF NOT EXISTS camisetas (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                imagem TEXT NOT NULL,
+                cor TEXT NOT NULL,
+                nome TEXT NOT NULL,
+                preco REAL NOT NULL,
+                time TEXT NOT NULL,
+                descricao TEXT NOT NULL,
+                estoque INTEGER NOT NULL
+            );
+            `);
+        setStatus('✅ Banco de dados e tabela prontos!');
       } catch (error) {
-        // Em caso de erro, mostra no console e alerta usuário
-        console.error("Erro ao conectar ou criar tabela:", error);
-        setStatus("❌ Erro ao inicializar o banco de dados. Veja o log.");
-        Alert.alert("Erro", "Não foi possível conectar ao banco de dados.");
+        console.error('Erro ao conectar ou criar tabela:', error);
+        setStatus('❌ Erro ao inicializar o banco de dados. Veja o log.');
+        Alert.alert('Erro', 'Não foi possível conectar ao banco de dados.');
       }
     }
-
-    // Chama a função para configurar o banco
+    // Chamando a função de setup
     setupDatabase();
-  }, []); // array vazio significa que roda apenas uma vez, ao montar
+  }, []); // O array vazio garante que isso rode apenas na primeira renderização
 
   // Função genérica para executar consultas SQL
   const executarConsulta = async (query, params = []) => {
@@ -109,8 +104,8 @@ const renderItem = ({ item }) => (
   const corStatus = status.startsWith("✅")
     ? estilos.cores.sucesso
     : status.startsWith("❌")
-    ? estilos.cores.erro
-    : estilos.cores.texto;
+      ? estilos.cores.erro
+      : estilos.cores.texto;
 
   return (
     <View style={estilos.tela}>
