@@ -66,6 +66,7 @@ function TelaListaDeCamisas({ navigation }) {
             descricao: 'Camisa do Mirassol: amarela vibrante com detalhes verdes e o leão no escudo destacando a identidade do clube',
             estoque: 15,
             time: 'Mirassol',
+            cor: 'amarelo, verde',
         },
         {
             id: 2,
@@ -75,6 +76,7 @@ function TelaListaDeCamisas({ navigation }) {
             descricao: 'Camisa do Palmeiras: verde tradicional com detalhes brancos e o escudo alviverde simbolizando tradição e glórias',
             estoque: 8,
             time: 'Palmeiras',
+            cor: 'verde, branco',
         },
         {
             id: 3,
@@ -84,6 +86,7 @@ function TelaListaDeCamisas({ navigation }) {
             descricao: 'Camisa do São Paulo: branca com faixas horizontais vermelha e preta no peito, destacando o escudo tricolor',
             estoque: 30,
             time: 'São Paulo',
+            cor: 'branco, vermelho',
         },
         {
             id: 4,
@@ -93,6 +96,7 @@ function TelaListaDeCamisas({ navigation }) {
             descricao: 'Camisa do Grêmio: listrada em azul, preto e branco, com o escudo tricolor centralizado no peito.',
             estoque: 32,
             time: 'Grêmio',
+            cor: 'azul, branco',
         },
         {
             id: 5,
@@ -102,6 +106,7 @@ function TelaListaDeCamisas({ navigation }) {
             descricao: ' Camisa do Vasco: preta com detalhes em branco e o icônico escudo cruzmaltino, simbolizando tradição e paixão.',
             estoque: 28,
             time: 'Vasco',
+            cor: 'preto, branco',
         },
         {
             id: 6,
@@ -111,6 +116,7 @@ function TelaListaDeCamisas({ navigation }) {
             descricao: ' Camisa do Santos: branca com detalhes em preto e o escudo do peixe, representando a história e a tradição do clube.',
             estoque: 18,
             time: 'Santos',
+            cor: 'branco, preto',
         },
         {
             id: 7,
@@ -120,6 +126,7 @@ function TelaListaDeCamisas({ navigation }) {
             descricao: '    Camisa do Corinthians: branca com detalhes em preto e o famoso escudo alvinegro, simbolizando a força e a paixão da torcida.',
             estoque: 10,
             time: 'Corinthians',
+            cor: 'preta, vermelha'
         },
         {
             id: 8,
@@ -129,6 +136,7 @@ function TelaListaDeCamisas({ navigation }) {
             descricao: ' Camisa do Bahia: azul e vermelho com listras horizontais, destacando o escudo tricolor e a tradição do clube baiano.',
             estoque: 11,
             time: 'Bahia',
+            cor: 'azul, vermelho',
         },
         {
             id: 9,
@@ -138,6 +146,7 @@ function TelaListaDeCamisas({ navigation }) {
             descricao: ' Camisa do Fluminense: verde, branco e grená com listras verticais, destacando o escudo tricolor e a história do clube carioca.',
             estoque: 15,
             time: 'Fluminense',
+            cor: 'verde, vermelho',
         },
         {
             id: 10,
@@ -147,6 +156,7 @@ function TelaListaDeCamisas({ navigation }) {
             descricao: ' Camisa do Flamengo: vermelha e preta com listras horizontais, destacando o escudo rubro-negro e a paixão da torcida carioca.',
             estoque: 8,
             time: 'Flamengo',
+            cor: 'vemelho, preto',
         },
     ];
 
