@@ -9,10 +9,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 function ListaDetalhesProdutos({ route, navigation }) {
 
   const { produtoSelecionado } = route.params || {}
-
   const [quantidade, setQuantidade] = useState(1)
-
   const [apelidoUser, setApelidoUser] = useState("")
+
+  // ---------------------------------- AsyncStorage
 
   // Lista de Desejos
   const [listaDesejos, setListaDesejos] = useState([])
@@ -170,6 +170,95 @@ function ListaDetalhesProdutos({ route, navigation }) {
     )
   }
 
+  // --------------------- SQLite
+
+  const idCamisa = (produtoSelecionado.id || '')
+  const [erroSQLite, setErroSQLite] = useState('')
+  
+  const nomeBancoDados = 'db_camisas.db'
+  const nomeTabelaDados = 'camisas'
+
+
+  // UPDATE
+
+  const [nomeCamisa, setNomeCamisa] = useState('')
+  const [precoCamisa, setPrecoCamisa] = useState('')
+  const [descricaoCamisa, setDescricaoCamisa] = useState('')
+  const [estoqueCamisa, setEstoqueCamisa] = useState('')
+  const [corCamisa, setCorCamisa] = useState('')
+  
+
+  const atualizarCamisa = async () => {
+    try {
+      const numId = Number(idCamisa);
+      if (!numId) return setErroSQLite('⚠️ Informe um ID válido para atualizar.');
+
+      const db = await SQLite.openDatabaseAsync(nomeBancoDados);
+
+      const sets = []   // Array para armazenar os campos a serem atualizados
+      const params = [] // Array para armazenar os valores correspondentes
+
+
+      if (nomeCamisa) { 
+        sets.push('nome = ?')
+        params.push(nomeCamisa) 
+      }
+
+      if (precoCamisa) { 
+        sets.push('preco = ?')
+        params.push(Number(precoCamisa))
+      }
+
+      if (descricaoCamisa) { 
+        sets.push('descricao = ?')
+        params.push(descricaoCamisa)
+      }
+
+      if (estoqueCamisa) { 
+        sets.push('estoque = ?')
+        params.push(estoqueCamisa)
+      }
+
+      if (corCamisa) { 
+        sets.push('cor = ?') 
+        params.push(corCamisa)
+      }
+
+
+      if (sets.length === 0) return setErroSQLite('⚠️ Informe ao menos um campo (nome/preço/descrição/estoque/cor).');
+
+      params.push(numId)
+
+      // Monta o comando que sera executado
+      const sql = `UPDATE ${nomeTabelaDados} SET ${sets.join(', ')} WHERE id = ?;`
+      // sets.join serve para juntar os campos com vírgula. Ex: nome = NomeNovo, preco = PreçoNovo, descricao = DescriçãoNova
+      
+      // Executa a query
+      await db.runAsync(sql, params)
+      // params serve para passar os valores que vão substituir os ? na query
+
+      setErroSQLite('✅ Atualização executada para ID ' + numId)
+    } catch (e) {
+      setErroSQLite('❌ Erro: ' + e.message)
+    }
+  }
+
+  // DELETE
+  
+  const deletarCamisa = async () => {
+    try {
+      const numId = Number(idCamisa);
+      if (!numId) return setErroSQLite('⚠️ Informe um ID válido para deletar.');
+
+      const db = await SQLite.openDatabaseAsync(nomeBancoDados);
+
+      await db.runAsync(`DELETE FROM ${nomeTabelaDados} WHERE id = ?;`, [numId]);
+      setErroSQLite('🗑️ Deletado (se existia) o ID ' + numId);
+    } catch (e) {
+      setErroSQLite('❌ Erro: ' + e.message);
+    }
+  };
+
   return (
 
     <ScrollView style={estilos.container}>
@@ -225,6 +314,23 @@ function ListaDetalhesProdutos({ route, navigation }) {
         </TouchableOpacity>
       </View>
 
+      {/* Botões do SQLite */}
+
+      <View>
+        <TouchableOpacity style={{ ...estilos.botaoComprar, backgroundColor: '#76fc68' }} onPress={() => {atualizarCamisa()}}>
+          <Text style={estilos.textoBotaoComprar}>Atualizar</Text>
+        </TouchableOpacity>
+      
+        <TouchableOpacity style={{ ...estilos.botaoComprar, backgroundColor: '#f53838' }} onPress={() => {deletarCamisa()}}>
+          <Text style={estilos.textoBotaoComprar}>Deletar</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* -------------------------------------- */}
+
+
+      {/* Botões do AsyncStorage */}
+
       <View>
         {!listaDesejos.find(item => item.id === produtoSelecionado.id) &&
           <TouchableOpacity style={estilos.botaoComprar} onPress={adicionarDesejo}>
@@ -237,6 +343,9 @@ function ListaDetalhesProdutos({ route, navigation }) {
           </TouchableOpacity>}
 
       </View>
+
+      {/* -------------------------------------- */}
+
       <TouchableOpacity style={estilos.botaoComprar} onPress={adicionarAoCarrinho}>
         <Text style={estilos.textoBotaoComprar}> Adicionar ao Carrinho </Text>
       </TouchableOpacity>
