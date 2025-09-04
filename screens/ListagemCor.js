@@ -9,7 +9,7 @@ import {
   Alert,
 } from 'react-native';
 import * as SQLite from 'expo-sqlite';
-
+ 
 export default function ListagemCor() {
   const [db, setDb] = useState(null);
   const [resultados, setResultados] = useState([]);
