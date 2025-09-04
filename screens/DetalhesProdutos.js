@@ -21,7 +21,6 @@ function ListaDetalhesProdutos({ route, navigation }) {
   const { produtoSelecionado } = route.params || {}
   const [quantidade, setQuantidade] = useState(1)
 
-<<<<<<<<< Temporary merge branch 1
   // useEffect: roda quando a tela monta. Se não houver produto, avisa e volta.
   useEffect(() => {
     if (!produtoSelecionado) {
@@ -33,7 +32,6 @@ function ListaDetalhesProdutos({ route, navigation }) {
   }, [produtoSelecionado]) // Caso o produtoSelecionado mudar, o useEffect será chamado novamente
 
   // Se não houver produto (fizemos goBack no useEffect), não renderizamos nada
-=========
   const [apelidoUser, setApelidoUser] = useState("")
 
   // Lista de Desejos
@@ -92,8 +90,6 @@ function ListaDetalhesProdutos({ route, navigation }) {
     }
   }, [produtoSelecionado])
 
-
->>>>>>>>> Temporary merge branch 2
   if (!produtoSelecionado) {
     return null
   }
@@ -310,12 +306,9 @@ function ListaDetalhesProdutos({ route, navigation }) {
         <Text style={estilos.precoProduto}>
           R$ {(produtoSelecionado.preco || 0).toFixed(2)}
         </Text>
-
-<<<<<<<<< Temporary merge branch 1
+        
     {/* Usa o operador ternário para verificar estoque, caso nao tiver, coloca 0 */}
-=========
 
->>>>>>>>> Temporary merge branch 2
       <Text style={estilos.estoque}>
         Estoque: {produtoSelecionado.estoque ? produtoSelecionado.estoque : 0} unidades
       </Text>
