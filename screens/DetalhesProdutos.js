@@ -11,95 +11,116 @@ import {
   ScrollView,
 } from 'react-native'
 
-/*
-  ListaDetalhesProdutos:
-  - Esta tela recebe, via rota, um objeto chamado `produtoSelecionado`.
-  - Mostra a imagem grande, nome, preço, descrição, tamanhos, controle de quantidade
-    e um botão para "Adicionar ao Carrinho" (Apenas demonstração, não funcional).
-*/
+// Importação para a utilização do storage
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-function ListaDetalhesProdutos({ route, navigation }) { //Parametros
-  // route.params vem do navigation.navigate(..., { produtoSelecionado: ... })
 
-  const { produtoSelecionado } = route.params || {} // usamos || {} para evitar erro caso params seja undefined.
+function ListaDetalhesProdutos({ route, navigation }) {
+
+  const { produtoSelecionado } = route.params || {}
 
   // Quantidade selecionada de camisetas para colocar no carrinho pelo usuário (estado local)
   const [quantidade, setQuantidade] = useState(1)
 
-  // useEffect: roda quando a tela monta. Se não houver produto, avisa e volta.
+  const [apelidoUser, setApelidoUser] = useState("")
+
+  // Função para carregar dados do AsyncStorage
+  const carregarDados = async () => {
+    try {  // Tenta carregar os dados
+      
+      // Armazena o apelido do usuário
+      const apelido = await AsyncStorage.getItem('apelido')
+      
+      // Se o apelido existir, atualiza o estado, senão exibe um alerta e define como "Anônimo"
+      if (apelido !== null) {
+        setApelidoUser(apelido)
+        console.log(apelido)
+      }
+      else {
+        Alert.alert("Erro", "Nome não encontrado.")
+        setApelidoUser("Anonimo")
+      }
+    } catch (e) { // Em caso de erro em buscar, exibe um alerta e o erro no console
+      Alert.alert("Erro", 'Erro ao carregar dados.')
+      console.error(e)
+    }
+  }
+
+  // Busca o apelido quando o usuário entrar na tela
+  useEffect(() => {
+    carregarDados()
+  }, [])
+
+
   useEffect(() => {
     if (!produtoSelecionado) {
       Alert.alert('Erro', 'Produto não encontrado', [
-        // botão "Voltar" chama navigation.goBack() para retornar à tela anterior
+
         { text: 'Voltar', onPress: () => navigation.goBack() },
       ])
     }
-  }, [produtoSelecionado]) // Caso o produtoSelecionado mudar, o useEffect será chamado novamente
+  }, [produtoSelecionado])
 
-  // Se não houver produto (fizemos goBack no useEffect), não renderizamos nada
+
   if (!produtoSelecionado) {
     return null
   }
 
-  // Função chamada ao pressionar "Adicionar ao Carrinho"
-  // Aqui só mostramos um alerta de confirmação e voltamos para a lista.
   const adicionarAoCarrinho = () => {
     Alert.alert(
       'Sucesso!',
       `${quantidade} ${produtoSelecionado.nome} adicionado(s) ao carrinho!`,
       [
         {
-          text: 'Continuar Comprando', // Texto do botão
-          onPress: () => navigation.goBack(), // Quando cliclado, faz o goBack(), que volta para página anterior (Catalogo)
+          text: 'Continuar Comprando',
+          onPress: () => navigation.goBack(),
         },
       ]
     )
   }
 
-  // Ajusta a quantidade respeitando o estoque disponível
-  const alterarQuantidade = (incremento) => { // Parametro "incremento"
+  const alterarQuantidade = (incremento) => {
     const novaQuantidade = quantidade + incremento
-    // garante que quantidade fique entre 1 e estoque
+
     if (novaQuantidade >= 1 && novaQuantidade <= (produtoSelecionado.estoque || 0)) {
       setQuantidade(novaQuantidade)
     }
   }
 
-  // Normaliza a URI da imagem (remove espaços e evita undefined)
+
   const imagemUri = (produtoSelecionado.imagem || '').trim() || 'https://via.placeholder.com/400'
 
   return (
-    // Usamos ScrollView para fazer a rolagem vertical da tela se necessário
+
     <ScrollView style={estilos.container}>
 
-      {/* Botão de voltar simples */}
-      <TouchableOpacity style={estilos.botaoVoltar} onPress={() => navigation.goBack()}> {/* Utiliza o goBack() para voltar a página anterior */}
+
+      <TouchableOpacity style={estilos.botaoVoltar} onPress={() => navigation.goBack()}>
         <Text style={estilos.textoVoltar}> Voltar </Text>
       </TouchableOpacity>
 
-      {/* Imagem grande do produto */}
+      <Text style={{ textAlign: 'center', fontWeight: 'bold', fontSize: 15, color:'#3300ffff' }} >Bem vindo(a), {apelidoUser}</Text>
+
       <Image source={{ uri: imagemUri }} style={estilos.imagemGrande} />
 
-      {/* Nome, preço e outras infos - Utiliza o produtoSelecionado vindo da rota */}
-      {/* Nome do produto */}
+
       <Text style={estilos.nomeProduto}> {produtoSelecionado.nome} </Text>
 
-      {/* Preço do produto, deixa o preço ou 0 se nao houver, e sempre com 2 casas decimais no máximo */}
+
       <Text style={estilos.precoProduto}>
         R$ {(produtoSelecionado.preco || 0).toFixed(2)}
       </Text>
 
-    {/* Usa o operador ternário para verificar estoque, caso nao tiver, coloca 0 */}
       <Text style={estilos.estoque}>
-        Estoque: {produtoSelecionado.estoque ? produtoSelecionado.estoque : 0} unidades 
+        Estoque: {produtoSelecionado.estoque ? produtoSelecionado.estoque : 0} unidades
       </Text>
 
-    {/* Descrição do produto */}
+
       <Text style={estilos.descricaoProduto}> {produtoSelecionado.descricao} </Text>
 
-      {/* Tags de tamanhos — componente visual para mostrar opções */}
+
       <View style={estilos.tamanhosContainer}>
-        {['P', 'M', 'G', 'XG'].map((tamanho) => ( // Percorre o array de tamanhos e cria uma "tag" para cada um
+        {['P', 'M', 'G', 'XG'].map((tamanho) => (
 
           <View key={tamanho} style={estilos.tagTamanho}>
             <Text style={estilos.textoTagTamanho}> {tamanho} </Text>
@@ -107,23 +128,22 @@ function ListaDetalhesProdutos({ route, navigation }) { //Parametros
         ))}
       </View>
 
-      {/* Controle de quantidade: - / número / + */}
+
       <View style={estilos.selectorQuantidade}>
-        {/* Botão de (-) diminuir 1 quantidade */}
+
         <TouchableOpacity style={estilos.botaoQuantidade} onPress={() => alterarQuantidade(-1)}>
           <Text style={estilos.textoQuantidade}> - </Text>
         </TouchableOpacity>
 
-        {/* Quantidade atual de produtos */}
+
         <Text style={estilos.numeroQuantidade}> {quantidade} </Text>
 
-        {/* Botão de (+) aumentar 1 quantidade */}
+
         <TouchableOpacity style={estilos.botaoQuantidade} onPress={() => alterarQuantidade(1)}>
           <Text style={estilos.textoQuantidade}> + </Text>
         </TouchableOpacity>
       </View>
 
-      {/* Botão principal para adicionar ao carrinho */}
       <TouchableOpacity style={estilos.botaoComprar} onPress={adicionarAoCarrinho}>
         <Text style={estilos.textoBotaoComprar}> Adicionar ao Carrinho </Text>
       </TouchableOpacity>

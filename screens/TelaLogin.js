@@ -8,8 +8,11 @@ import {
   ScrollView,
   ActivityIndicator,
   KeyboardAvoidingView,
-  Platform,
+  Platform
 } from "react-native";
+
+/* Importação para a utilização do storage */
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 import { LinearGradient } from "expo-linear-gradient";
 import { BlurView } from "expo-blur";
@@ -48,6 +51,19 @@ function TelaLogin({ navigation }) {
 
   const usuarioDigitado = watch("usuario");
   const senhaDigitada = watch("senha");
+  const apelidoDigitado = watch("apelido")
+
+  // Função para salvar dados no AsyncStorage
+  const salvarDados = async () => {
+    try { // Tenta salvar os dados
+
+      // Salva o apelido no AsyncStorage
+      await AsyncStorage.setItem("apelido", apelidoDigitado);
+
+    } catch (error) { // Em caso de erro, exibe no console
+      console.error("Erro ao salvar dados:", error);
+    }
+  }
 
   const usuariosValidos = [
     {
@@ -60,8 +76,8 @@ function TelaLogin({ navigation }) {
   // Função para verificar login
   const realizarLogin = () => {
 
-    if (!usuarioDigitado || !senhaDigitada) {
-      setErro("Preencha usuário e senha");
+    if (!usuarioDigitado || !senhaDigitada || !apelidoDigitado) {
+      setErro("Preencha usuário, apelido e senha");
       return;
     }
 
@@ -70,17 +86,19 @@ function TelaLogin({ navigation }) {
     );
 
     if (!usuarioValido) {
-      setErro("Usuário ou senha incorretos");
+      setErro("Usuário incorreto");
       return;
     }
 
-    setErro(""); 
-    setCarregando(true); 
+    setErro("");
+    setCarregando(true);
 
     setTimeout(() => {
       setCarregando(false);
+      // Chama a função para salvar os dados no AsyncStorage
+      salvarDados()
       navigation.navigate('Catalogo');
-    }, 3000); 
+    }, 3000);
   }
 
 
@@ -133,6 +151,20 @@ function TelaLogin({ navigation }) {
                   )}
                 />
 
+                {/* Campo de entrada do apelido */}
+                <Controller
+                  control={control}
+                  name="apelido"
+                  render={({ field: { onChange, value } }) => (
+                    <TextInput
+                      label="Apelido (Obrigatório)"
+                      value={value}
+                      onChangeText={onChange}
+                      style={estilos.input}
+                    />
+                  )}
+                />
+
                 {/* Exibe mensagem de erro, se houver */}
                 {erro !== "" && <Text style={estilos.error}>{erro}</Text>}
               </View>
@@ -141,10 +173,12 @@ function TelaLogin({ navigation }) {
             {/* Se estiver carregando, mostra texto e spinner */}
             {carregando && (
               <>
-                <Text style={{ marginVertical: 10 }}>
-                  Carregando, segura aí!
-                </Text>
-                <ActivityIndicator size="large" color="#218cff" />
+                <View style={{ marginVertical: 60 }}>
+                  <Text>
+                    Carregando, segura aí!
+                  </Text>
+                  <ActivityIndicator size="large" color="#218cff" />
+                </View>
               </>
             )}
             {/* Botão de login (só aparece se não estiver carregando) */}
@@ -186,7 +220,7 @@ const estilos = StyleSheet.create({
   },
   tela: {
     flex: 1,
-     minHeight: '100%', 
+    minHeight: '100%',
   },
   titulo: {
     fontSize: 30,
