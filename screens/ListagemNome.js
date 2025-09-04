@@ -86,11 +86,24 @@ export default function ListagemNome() {
   };
 
   // Função para renderizar cada item da lista de resultados
-  const renderItem = ({ item }) => (
-    <View style={estilos.itemLista}>
-      <Text style={estilos.textoItem}>{item.nome}</Text>
-    </View>
-  );
+const renderItem = ({ item }) => (
+  <View style={estilos.itemLista}>
+    {/* Imagem da camiseta */}
+    <Image
+      source={{ uri: item.imagem }} // URL ou caminho local
+      style={estilos.imagemItem}
+    />
+    
+    {/* Nome */}
+    <Text style={estilos.textoItem}>{item.nome}</Text>
+
+    {/* Preço */}
+    <Text style={estilos.textoPreco}>R$ {item.preco.toFixed(2)}</Text>
+
+    {/* Descrição */}
+    <Text style={estilos.textoDescricao}>{item.descricao}</Text>
+  </View>
+);
 
   // Define cor do texto de status baseado na mensagem
   const corStatus = status.startsWith("✅")
@@ -302,4 +315,24 @@ const estilos = StyleSheet.create({
     width: "100%",
     alignSelf: "center",
   },
+  imagemItem: {
+  width: 150,
+  height: 150,
+  resizeMode: "contain",
+  marginBottom: 10,
+},
+
+textoPreco: {
+  fontSize: 16,
+  fontWeight: "bold",
+  color: "#000",
+  marginBottom: 5,
+},
+
+textoDescricao: {
+  fontSize: 14,
+  color: "#333",
+  textAlign: "center",
+},
+
 });
