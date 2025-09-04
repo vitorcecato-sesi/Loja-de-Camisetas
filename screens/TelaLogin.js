@@ -35,12 +35,12 @@ function TelaLogin({ navigation }) {
         await db.execAsync(`
           CREATE TABLE IF NOT EXISTS camisetas (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            imagem TEXT,
-            cor TEXT,
+            imagem TEXT NOT NULL,
+            cor TEXT NOT NULL,
             nome TEXT NOT NULL,
             preco REAL NOT NULL,
-            time TEXT,
-            descricao TEXT,
+            time TEXT NOT NULL,
+            descricao TEXT NOT NULL,
             estoque INTEGER NOT NULL
           );
         `);
