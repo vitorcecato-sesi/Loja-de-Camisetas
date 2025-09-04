@@ -1,6 +1,15 @@
 import { useState, useEffect } from 'react'
 
-import { View, Text, Image, TouchableOpacity, StyleSheet, Alert, ScrollView } from 'react-native'
+// Componentes básicos do React Native usados para montar a tela
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+  ScrollView,
+} from 'react-native'
 
 // Importação para a utilização do storage
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -10,6 +19,7 @@ function ListaDetalhesProdutos({ route, navigation }) {
 
   const { produtoSelecionado } = route.params || {}
 
+  // Quantidade selecionada de camisetas para colocar no carrinho pelo usuário (estado local)
   const [quantidade, setQuantidade] = useState(1)
 
   const [apelidoUser, setApelidoUser] = useState("")
@@ -74,7 +84,6 @@ function ListaDetalhesProdutos({ route, navigation }) {
   if (!produtoSelecionado) {
     return null
   }
-
 
   const adicionarAoCarrinho = () => {
     Alert.alert(
@@ -192,7 +201,6 @@ function ListaDetalhesProdutos({ route, navigation }) {
         R$ {(produtoSelecionado.preco || 0).toFixed(2)}
       </Text>
 
-
       <Text style={estilos.estoque}>
         Estoque: {produtoSelecionado.estoque ? produtoSelecionado.estoque : 0} unidades
       </Text>
@@ -226,18 +234,6 @@ function ListaDetalhesProdutos({ route, navigation }) {
         </TouchableOpacity>
       </View>
 
-      <View>
-        {!listaDesejos.find(item => item.id === produtoSelecionado.id) &&
-          <TouchableOpacity style={estilos.botaoComprar} onPress={adicionarDesejo}>
-            <Text style={estilos.textoBotaoComprar}> Adicionar Lista de Desejos </Text>
-          </TouchableOpacity>}
-
-        {listaDesejos.find(item => item.id === produtoSelecionado.id) &&
-          <TouchableOpacity style={estilos.botaoRemover} onPress={removerDesejo}>
-            <Text style={estilos.textoBotaoComprar}> Remover Lista de Desejos </Text>
-          </TouchableOpacity>}
-
-      </View>
       <TouchableOpacity style={estilos.botaoComprar} onPress={adicionarAoCarrinho}>
         <Text style={estilos.textoBotaoComprar}> Adicionar ao Carrinho </Text>
       </TouchableOpacity>
@@ -254,7 +250,7 @@ const estilos = StyleSheet.create({
     backgroundColor: '#f8fafc',
     padding: 18,
   },
-
+  // botão de voltar no topo
   botaoVoltar: {
     marginBottom: 12,
     alignSelf: 'flex-start',
@@ -272,7 +268,7 @@ const estilos = StyleSheet.create({
     color: '#374151',
     fontWeight: '600',
   },
-
+  // imagem principal grande
   imagemGrande: {
     width: '100%',
     height: 360,
@@ -285,7 +281,7 @@ const estilos = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 8,
   },
-
+  // nome do produto
   nomeProduto: {
     fontSize: 28,
     fontWeight: 'bold',
@@ -294,7 +290,7 @@ const estilos = StyleSheet.create({
     textAlign: 'center',
     letterSpacing: 0.5,
   },
-
+  // preço
   precoProduto: {
     fontSize: 24,
     color: '#22c55e',
@@ -303,14 +299,14 @@ const estilos = StyleSheet.create({
     textAlign: 'center',
     letterSpacing: 0.5,
   },
-
+  // texto do estoque
   estoque: {
     fontSize: 15,
     color: '#64748b',
     marginBottom: 6,
     textAlign: 'center',
   },
-
+  // descrição
   descricaoProduto: {
     fontSize: 17,
     color: '#334155',
@@ -319,14 +315,14 @@ const estilos = StyleSheet.create({
     textAlign: 'center',
     paddingHorizontal: 8,
   },
-
+  // container das tags de tamanhos
   tamanhosContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     marginBottom: 18,
     gap: 10,
   },
-
+  // estilo das "tags" de tamanho
   tagTamanho: {
     backgroundColor: '#e0e7ff',
     borderRadius: 20,
@@ -347,7 +343,7 @@ const estilos = StyleSheet.create({
     fontWeight: 'bold',
     letterSpacing: 1,
   },
-
+  // selector de quantidade
   selectorQuantidade: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -384,7 +380,7 @@ const estilos = StyleSheet.create({
     paddingVertical: 6,
     elevation: 1,
   },
-
+  // botão principal de compra
   botaoComprar: {
     backgroundColor: '#6366f1',
     paddingVertical: 16,

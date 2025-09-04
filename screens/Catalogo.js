@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity, Image, Pressable, StyleSheet, RefreshControl, Dimensions, StatusBar, Platform, ActivityIndicator, SafeAreaView, Alert } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet, RefreshControl, Dimensions, StatusBar, Platform, ActivityIndicator, SafeAreaView, Alert } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import Configuracao from '../components/configuracao';
 
@@ -179,18 +179,15 @@ function TelaListaDeCamisas({ navigation }) {
         });
     };
 
-
-    const renderizarCamisa = ({ item }) => {
-        return (
-            <TouchableOpacity style={estilos.cardCamisa} onPress={() => abrirDetalhesCamisa(item)}>
-                <Image source={{ uri: item.imagem }} style={estilos.imagemCamisa} />
-                <View style={estilos.infoCamisa}>
-                    <Text style={estilos.nomeCamisa}>{item.nome}</Text>
-                    <Text style={estilos.precoCamisa}>R$ {item.preco.toFixed(2)}</Text>
-                </View>
-            </TouchableOpacity >
-        )
-    };
+    const renderizarCamisa = ({ item }) => (
+        <TouchableOpacity style={estilos.cardCamisa} onPress={() => abrirDetalhesCamisa(item)}>
+            <Image source={{ uri: item.imagem }} style={estilos.imagemCamisa} />
+            <View style={estilos.infoCamisa}>
+                <Text style={estilos.nomeCamisa}>{item.nome}</Text>
+                <Text style={estilos.precoCamisa}>R$ {item.preco.toFixed(2)}</Text>
+            </View>
+        </TouchableOpacity>
+    );
 
 
     if (loading) {
@@ -219,26 +216,7 @@ function TelaListaDeCamisas({ navigation }) {
             <View style={estilos.statusBarFalsa} />
             <View style={estilos.container}>
                 <Text style={estilos.titulo}>Catálogo de Camisas</Text>
-                <Text style={{ textAlign: 'center', fontWeight: 'bold', fontSize: 15, color: '#3300ffff' }}>Bem vindo(a), {nomeUser}</Text>
-                <View style={estilos.botaoDesejos}>
-                    <Pressable
-                        title={"ListaDesejos"}
-                        style={({ pressed }) => [
-                            estilos.buttonDesejos,
-                            {
-                                backgroundColor: pressed ? "#d1c4e9" : "#673ab7",
-                                padding: 5,
-                                width: width * 0.4,
-                                borderRadius: 12,
-                            }
-                        ]}
-                        onPress={() => navigation.navigate('ListaDesejos')}
-                    >
-                        <Text style={{ ...estilos.DesejoText, fontSize: 15, fontWeight: 'bold' }}>
-                            Lista de Desejos
-                        </Text>
-                    </Pressable>
-                </View>
+                <Text style={{ textAlign: 'center', fontWeight: 'bold', fontSize: 15, color:'#3300ffff' }}>Bem vindo(a), {nomeUser}</Text>
                 <Configuracao />
                 <View style={estilos.pickerContainer}>
                     <Text style={estilos.pickerLabel}>Filtrar por time:</Text>
@@ -275,109 +253,150 @@ function TelaListaDeCamisas({ navigation }) {
                     }
                 />
             </View>
-        </SafeAreaView>
+            </View>
+
+        </View>
+
+        <FlatList
+            style={styles.list}
+            contentContainerStyle={styles.listContent}
+            data={results}
+            renderItem={renderItem}
+            keyExtractor={(item) => item.id.toString()}
+            ListEmptyComponent={
+            <Text style={styles.emptyText}>Nenhum funcionário encontrado.</Text>
+            }
+        />
+        </View>
     );
-}
+    }
 
-export default TelaListaDeCamisas;
+    const styles = StyleSheet.create({
+    colors: {
+        background: '#F3F7FB',
+        card: '#FFFFFF',
+        primary: '#2563EB',
+        info: '#0EA5E9',
+        success: '#16A34A',
+        error: '#DC2626',
+        muted: '#6B7280',
+        text: '#0F1724',
+    },
 
-const estilos = StyleSheet.create({
-    loadingContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#f5f5f5',
-    },
-    loadingText: {
-        marginTop: 16,
-        fontSize: 18,
-        color: '#007AFF',
-        fontWeight: 'bold',
-    },
     container: {
         flex: 1,
-        backgroundColor: '#f5f5f5',
-        padding: 10,
+        backgroundColor: '#F3F7FB',
+        paddingHorizontal: 16,
+        paddingTop: 40,
+        paddingBottom: 20,
     },
-    titulo: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: '#6366f1',
-        padding: 12,
-        marginBottom: 10,
-        textAlign: 'center',
-    },
-    pickerContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
+
+    headerCard: {
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        padding: 16,
         marginBottom: 12,
-        backgroundColor: '#fff',
-        borderRadius: 8,
-        paddingHorizontal: 8,
-        elevation: 2,
-    },
-    pickerLabel: {
-        fontSize: 16,
-        color: '#6366f1',
-        fontWeight: 'bold',
-        marginRight: 8,
-    },
-    picker: {
-        flex: 1,
-        color: '#222',
-        height: 60,
-    },
-    linhaCamisas: {
-        justifyContent: 'space-between',
-    },
-    cardCamisa: {
-        backgroundColor: '#fff',
-        borderRadius: 10,
-        padding: 10,
-        marginBottom: 16,
-        width: '48%',
-        alignItems: 'center',
-        elevation: 2,
-    },
-    imagemCamisa: {
-        width: width * 0.4,
-        height: height * 0.2,
-        borderRadius: 8,
-        marginBottom: 10,
-        backgroundColor: 'white',
-    },
-    infoCamisa: {
+        shadowColor: '#0b1724',
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.06,
+        shadowRadius: 14,
+        elevation: 4,
         alignItems: 'center',
     },
-    nomeCamisa: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: '#222',
+
+    title: {
+        fontSize: 20,
+        fontWeight: '700',
+        color: '#0F1724',
+        marginBottom: 6,
         textAlign: 'center',
     },
-    precoCamisa: {
+
+    statusText: {
+        fontSize: 13,
+        color: '#64748B',
+    },
+
+    searchCard: {
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        padding: 14,
+        marginBottom: 14,
+        shadowColor: '#0b1724',
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.04,
+        shadowRadius: 12,
+        elevation: 3,
+    },
+
+    input: {
+        height: 46,
+        backgroundColor: '#FBFDFF',
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: '#E6EEF8',
+        paddingHorizontal: 12,
         fontSize: 15,
-        color: '#27ae60',
+        color: '#0F1724',
+        marginBottom: 10,
+    },
+
+    buttonContainer: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'space-between',
+        gap: 8,
         marginTop: 4,
     },
-    semCamisas: {
-        textAlign: 'center',
-        color: '#888',
-        marginTop: 30,
+
+    btnWrapper: {
+        width: '48%',
+        marginBottom: 8,
+    },
+
+    list: {
+        flex: 1,
+        marginTop: 6,
+    },
+
+    listContent: {
+        paddingBottom: 24,
+    },
+
+    item: {
+        backgroundColor: '#fff',
+        borderRadius: 10,
+        padding: 14,
+        marginBottom: 10,
+        shadowColor: '#0b1724',
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.04,
+        shadowRadius: 12,
+        elevation: 2,
+    },
+
+    itemTitle: {
         fontSize: 16,
+        fontWeight: '700',
+        color: '#0F1724',
+        marginBottom: 6,
     },
-    botaoDesejos: {
-        alignItems: 'center',
-        marginVertical: 20,
+
+    itemDetail: {
+        fontSize: 13,
+        color: '#475569',
+        marginBottom: 6,
     },
-    buttonDesejos: {
-        padding: 20,
-        width: 200,
-        borderRadius: 12,
+
+    itemSalary: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#2563EB',
     },
-    DesejoText: {
-        fontSize: 20,
-        color: '#fff',
+
+    emptyText: {
         textAlign: 'center',
+        color: '#64748B',
+        marginTop: 20,
     },
 });
