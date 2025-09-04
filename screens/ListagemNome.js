@@ -1,29 +1,31 @@
 import React, { useState, useEffect } from "react";
-import {
-  StyleSheet,
-  Text,
-  View,
-  TextInput,
-  TouchableOpacity,
-  FlatList,
-  Alert,
-} from "react-native";
-import * as SQLite from "expo-sqlite";
+import {StyleSheet,Text,View,TextInput,TouchableOpacity,FlatList, Alert} from "react-native";
+import * as SQLite from "expo-sqlite";// Importa biblioteca SQLite do Expo para banco de dados local
 
 export default function ListagemNome() {
-  const [db, setDb] = useState(null);
-  const [resultados, setResultados] = useState([]);
-  const [nomeCamisa, setNomeCamisa] = useState("");
-  const [status, setStatus] = useState("Inicializando...");
-  const [temTexto, setTemTexto] = useState(false);
+  const [db, setDb] = useState(null); // Estado que armazena a conexão com o banco de dados
+  const [resultados, setResultados] = useState([]); // Estado que guarda os resultados das consultas SQL
+  const [nomeCamisa, setNomeCamisa] = useState(""); // Estado que guarda o texto digitado no campo de pesquisa
+  const [status, setStatus] = useState("Inicializando..."); // Estado que guarda o status do app (carregando, sucesso, erro)
+  const [temTexto, setTemTexto] = useState(false); // Estado para indicar se o campo de pesquisa tem algum texto
 
   useEffect(() => {
-    async function setupDatabase() {
+    async function setupDatabase() {  // Função assíncrona para criar/abrir banco e tabela
       try {
-        const database = await SQLite.openDatabaseAsync("bd_camisas.db");
-        setDb(database);
+        const database = await SQLite.openDatabaseAsync("bd_camisas.db"); // Abre ou cria banco de dados chamado "bd_camisas.db"
+        setDb(database);// salva o objeto do banco no estado
 
-        await database.execAsync(`(CREATE TABLE IF NOT EXISTS camisetas (
+        // Cria tabela "camisetas" se não existir
+        // id: chave primária auto increment
+        // imagem: URL ou caminho da imagem da camiseta
+        // cor: cor da camiseta
+        // nome: nome da camiseta
+        // preco: preço
+        // time: time relacionado
+        // descricao: descrição da camiseta
+        // estoque: quantidade em estoque
+
+        await database.execAsync(`CREATE TABLE IF NOT EXISTS camisetas (   
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             imagem TEXT NOT NULL,
             cor TEXT NOT NULL,
@@ -31,52 +33,66 @@ export default function ListagemNome() {
             preco REAL NOT NULL,
             time TEXT NOT NULL,
             descricao TEXT NOT NULL,
-            estoque INTEGER NOT NULL)`);
+            estoque INTEGER NOT NULL`);
+    // Atualiza o status para mostrar que banco e tabela estão prontos
         setStatus("✅ Banco de dados e tabela prontos!");
       } catch (error) {
+        // Em caso de erro, mostra no console e alerta usuário
         console.error("Erro ao conectar ou criar tabela:", error);
         setStatus("❌ Erro ao inicializar o banco de dados. Veja o log.");
         Alert.alert("Erro", "Não foi possível conectar ao banco de dados.");
       }
     }
 
+    // Chama a função para configurar o banco
     setupDatabase();
-  }, []);
+  }, []); // array vazio significa que roda apenas uma vez, ao montar
 
+  // Função genérica para executar consultas SQL
   const executarConsulta = async (query, params = []) => {
+ // Verifica se o banco está pronto
     if (!db) {
       Alert.alert("Erro", "O banco de dados não está pronto.");
       return;
     }
 
     try {
+        // Executa consulta e retorna todas as linhas
       const rows = await db.getAllAsync(query, params);
+       // Salva resultados no estado
       setResultados(rows);
+      // Se não houver resultados, mostra aviso
       if (rows.length === 0) {
         Alert.alert("Aviso", "Nenhum resultado encontrado.");
       }
     } catch (error) {
+        // Em caso de erro, mostra alerta e log
       Alert.alert("Erro", "Falha na consulta. Verifique o console.");
       console.error("Erro na consulta:", error);
     }
   };
 
+  // Função específica para pesquisar camisetas pelo nome
   const pesquisarNome = async () => {
+    // Verifica se o campo está vazio
     if (!nomeCamisa.trim()) {
       Alert.alert("Aviso", "Digite um nome para pesquisar.");
       return;
     }
+    // Executa consulta SQL usando LIKE para buscar parcialmente
     await executarConsulta("SELECT * FROM camisetas WHERE nome LIKE ?;", [
       `%${nomeCamisa}%`,
     ]);
   };
 
+  // Função para renderizar cada item da lista de resultados
   const renderItem = ({ item }) => (
     <View style={estilos.itemLista}>
       <Text style={estilos.textoItem}>{item.nome}</Text>
     </View>
   );
 
+  // Define cor do texto de status baseado na mensagem
   const corStatus = status.startsWith("✅")
     ? estilos.cores.sucesso
     : status.startsWith("❌")
@@ -85,52 +101,57 @@ export default function ListagemNome() {
 
   return (
     <View style={estilos.tela}>
-      <View style={estilos.bloco}>
-        <View style={estilos.cabecalho}>
+      <View style={estilos.bloco}> {/* Bloco principal que contém tudo */}
+        <View style={estilos.cabecalho}>    {/* Cabeçalho com título */}
           <Text style={estilos.titulo}>Consultar Nome da Camiseta</Text>
         </View>
 
-        <View style={estilos.caixaPesquisa}>
+        <View style={estilos.caixaPesquisa}>{/* Caixa de pesquisa */}
           <View style={estilos.blocoInput}>
-            <Text style={estilos.label}>Pesquisar</Text>
-            <View
+            <Text style={estilos.label}>Pesquisar</Text> {/* Label do campo */}
+            {/* Linha de borda que muda de cor se tem texto */}
+            <View 
               style={[
                 estilos.linha,
                 { borderBottomColor: temTexto ? "#90EE90" : "#6B7280" },
               ]}
             >
-              <TextInput
+              {/* Input de texto */}
+              <TextInput  
                 style={estilos.campoTexto}
                 placeholder="Digite um nome de camiseta"
                 placeholderTextColor="#6B7280"
                 value={nomeCamisa}
                 onChangeText={(texto) => {
-                  setNomeCamisa(texto);
-                  setTemTexto(texto.trim().length > 0);
+                  setNomeCamisa(texto); // atualiza estado
+                  setTemTexto(texto.trim().length > 0); // atualiza se tem texto
                 }}
               />
             </View>
 
+             {/* Botão de pesquisa */}
             <TouchableOpacity
               style={estilos.botao}
-              onPress={pesquisarNome}
-              disabled={!db}
+              onPress={pesquisarNome}  // chama função de pesquisa
+              disabled={!db} // desabilita se banco não estiver pronto
             >
               <Text style={estilos.textoBotao}>🔎</Text>
             </TouchableOpacity>
           </View>
         </View>
 
-        <FlatList
+        {/* Lista de resultados */}
+        <FlatList 
           style={estilos.lista}
           contentContainerStyle={estilos.conteudoLista}
-          data={resultados}
-          renderItem={renderItem}
+          data={resultados} // dados da lista
+          renderItem={renderItem} // função que renderiza cada item
           keyExtractor={(item) => item.id.toString()}
           ListEmptyComponent={
             <Text style={estilos.textoVazio}>Nenhuma camiseta encontrada</Text>
           }
         />
+        {/* Status do banco (sucesso, erro ou carregando) */}
         <Text style={[estilos.textoStatus, { color: corStatus }]}>
           {status}
         </Text>
