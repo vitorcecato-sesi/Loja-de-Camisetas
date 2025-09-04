@@ -9,6 +9,7 @@ import {
   StyleSheet,
   Alert,
   ScrollView,
+  Modal,
 } from 'react-native'
 
 // Importação para a utilização do storage
@@ -20,12 +21,13 @@ function ListaDetalhesProdutos({ route, navigation }) {
   const { produtoSelecionado } = route.params || {}
   const [quantidade, setQuantidade] = useState(1)
   const [apelidoUser, setApelidoUser] = useState("")
+  const [modalVisivel, setModalVisivel] = useState(false)
 
   // ---------------------------------- AsyncStorage
 
   // Lista de Desejos
   const [listaDesejos, setListaDesejos] = useState([])
-  
+
   // Controle de carregamento de dados 
   const [carregado, setCarregando] = useState(false)
 
@@ -183,7 +185,7 @@ function ListaDetalhesProdutos({ route, navigation }) {
 
   const idCamisa = (produtoSelecionado.id || '')
   const [erroSQLite, setErroSQLite] = useState('')
-  
+
   const nomeBancoDados = 'db_camisas.db'
   const nomeTabelaDados = 'camisas'
 
@@ -195,7 +197,9 @@ function ListaDetalhesProdutos({ route, navigation }) {
   const [descricaoCamisa, setDescricaoCamisa] = useState('')
   const [estoqueCamisa, setEstoqueCamisa] = useState('')
   const [corCamisa, setCorCamisa] = useState('')
-  
+  const [timeCamisa, setTimeCamisa] = useState('')
+  const [imagemCamisa, setImagemCamisa] = useState('')
+
 
   const atualizarCamisa = async () => {
     try {
@@ -208,29 +212,34 @@ function ListaDetalhesProdutos({ route, navigation }) {
       const params = [] // Array para armazenar os valores correspondentes
 
 
-      if (nomeCamisa) { 
+      if (nomeCamisa) {
         sets.push('nome = ?')
-        params.push(nomeCamisa) 
+        params.push(nomeCamisa)
       }
 
-      if (precoCamisa) { 
+      if (precoCamisa) {
         sets.push('preco = ?')
         params.push(Number(precoCamisa))
       }
 
-      if (descricaoCamisa) { 
+      if (descricaoCamisa) {
         sets.push('descricao = ?')
         params.push(descricaoCamisa)
       }
 
-      if (estoqueCamisa) { 
+      if (estoqueCamisa) {
         sets.push('estoque = ?')
         params.push(estoqueCamisa)
       }
 
-      if (corCamisa) { 
-        sets.push('cor = ?') 
+      if (corCamisa) {
+        sets.push('cor = ?')
         params.push(corCamisa)
+      }
+
+      if (timeCamisa) {
+        sets.push('time = ?')
+        params.push(timeCamisa)
       }
 
 
@@ -241,7 +250,7 @@ function ListaDetalhesProdutos({ route, navigation }) {
       // Monta o comando que sera executado
       const sql = `UPDATE ${nomeTabelaDados} SET ${sets.join(', ')} WHERE id = ?;`
       // sets.join serve para juntar os campos com vírgula. Ex: nome = NomeNovo, preco = PreçoNovo, descricao = DescriçãoNova
-      
+
       // Executa a query
       await db.runAsync(sql, params)
       // params serve para passar os valores que vão substituir os ? na query
@@ -253,7 +262,7 @@ function ListaDetalhesProdutos({ route, navigation }) {
   }
 
   // DELETE
-  
+
   const deletarCamisa = async () => {
     try {
       const numId = Number(idCamisa);
@@ -270,95 +279,159 @@ function ListaDetalhesProdutos({ route, navigation }) {
 
   return (
 
-    <ScrollView style={estilos.container}>
+    <>
+      <ScrollView style={estilos.container}>
 
 
-      <TouchableOpacity style={estilos.botaoVoltar} onPress={() => navigation.goBack()}>
-        <Text style={estilos.textoVoltar}> Voltar </Text>
-      </TouchableOpacity>
-
-      <Text style={{ textAlign: 'center', fontWeight: 'bold', fontSize: 15, color: '#3300ffff' }} >Bem vindo(a), {apelidoUser}</Text>
-
-      <Image source={{ uri: imagemUri }} style={estilos.imagemGrande} />
-
-
-      <Text style={estilos.nomeProduto}> {produtoSelecionado.nome} </Text>
-
-
-      <Text style={estilos.precoProduto}>
-        R$ {(produtoSelecionado.preco || 0).toFixed(2)}
-      </Text>
-
-      <Text style={estilos.estoque}>
-        Estoque: {produtoSelecionado.estoque ? produtoSelecionado.estoque : 0} unidades
-      </Text>
-
-
-      <Text style={estilos.descricaoProduto}> {produtoSelecionado.descricao} </Text>
-
-
-      <View style={estilos.tamanhosContainer}>
-        {['P', 'M', 'G', 'XG'].map((tamanho) => (
-
-          <View key={tamanho} style={estilos.tagTamanho}>
-            <Text style={estilos.textoTagTamanho}> {tamanho} </Text>
-          </View>
-        ))}
-      </View>
-
-
-      <View style={estilos.selectorQuantidade}>
-
-        <TouchableOpacity style={estilos.botaoQuantidade} onPress={() => alterarQuantidade(-1)}>
-          <Text style={estilos.textoQuantidade}> - </Text>
+        <TouchableOpacity style={estilos.botaoVoltar} onPress={() => navigation.goBack()}>
+          <Text style={estilos.textoVoltar}> Voltar </Text>
         </TouchableOpacity>
 
+        <Text style={{ textAlign: 'center', fontWeight: 'bold', fontSize: 15, color: '#3300ffff' }} >Bem vindo(a), {apelidoUser}</Text>
 
-        <Text style={estilos.numeroQuantidade}> {quantidade} </Text>
+        <Image source={{ uri: imagemUri }} style={estilos.imagemGrande} />
 
 
-        <TouchableOpacity style={estilos.botaoQuantidade} onPress={() => alterarQuantidade(1)}>
-          <Text style={estilos.textoQuantidade}> + </Text>
+        <Text style={estilos.nomeProduto}> {produtoSelecionado.nome} </Text>
+
+
+        <Text style={estilos.precoProduto}>
+          R$ {(produtoSelecionado.preco || 0).toFixed(2)}
+        </Text>
+
+        <Text style={estilos.estoque}>
+          Estoque: {produtoSelecionado.estoque ? produtoSelecionado.estoque : 0} unidades
+        </Text>
+
+
+        <Text style={estilos.descricaoProduto}> {produtoSelecionado.descricao} </Text>
+
+
+        <View style={estilos.tamanhosContainer}>
+          {['P', 'M', 'G', 'XG'].map((tamanho) => (
+
+            <View key={tamanho} style={estilos.tagTamanho}>
+              <Text style={estilos.textoTagTamanho}> {tamanho} </Text>
+            </View>
+          ))}
+        </View>
+
+
+        <View style={estilos.selectorQuantidade}>
+
+          <TouchableOpacity style={estilos.botaoQuantidade} onPress={() => alterarQuantidade(-1)}>
+            <Text style={estilos.textoQuantidade}> - </Text>
+          </TouchableOpacity>
+
+
+          <Text style={estilos.numeroQuantidade}> {quantidade} </Text>
+
+
+          <TouchableOpacity style={estilos.botaoQuantidade} onPress={() => alterarQuantidade(1)}>
+            <Text style={estilos.textoQuantidade}> + </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Botões do SQLite */}
+
+        <View>
+          <TouchableOpacity style={{ ...estilos.botaoComprar, backgroundColor: '#76fc68' }} onPress={() => { atualizarCamisa() }}>
+            <Text style={estilos.textoBotaoComprar}>Atualizar</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={{ ...estilos.botaoComprar, backgroundColor: '#f53838' }} onPress={() => { deletarCamisa() }}>
+            <Text style={estilos.textoBotaoComprar}>Deletar</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* -------------------------------------- */}
+
+
+        {/* Botões do AsyncStorage */}
+
+        <View>
+          {!listaDesejos.find(item => item.id === produtoSelecionado.id) &&
+            <TouchableOpacity style={estilos.botaoComprar} onPress={adicionarDesejo}>
+              <Text style={estilos.textoBotaoComprar}> Adicionar Lista de Desejos </Text>
+            </TouchableOpacity>}
+
+          {listaDesejos.find(item => item.id === produtoSelecionado.id) &&
+            <TouchableOpacity style={estilos.botaoRemover} onPress={removerDesejo}>
+              <Text style={estilos.textoBotaoComprar}> Remover Lista de Desejos </Text>
+            </TouchableOpacity>}
+
+        </View>
+
+        {/* -------------------------------------- */}
+
+        <TouchableOpacity style={estilos.botaoComprar} onPress={adicionarAoCarrinho}>
+          <Text style={estilos.textoBotaoComprar}> Adicionar ao Carrinho </Text>
         </TouchableOpacity>
-      </View>
 
-      {/* Botões do SQLite */}
+      </ScrollView>
 
-      <View>
-        <TouchableOpacity style={{ ...estilos.botaoComprar, backgroundColor: '#76fc68' }} onPress={() => {atualizarCamisa()}}>
-          <Text style={estilos.textoBotaoComprar}>Atualizar</Text>
-        </TouchableOpacity>
-      
-        <TouchableOpacity style={{ ...estilos.botaoComprar, backgroundColor: '#f53838' }} onPress={() => {deletarCamisa()}}>
-          <Text style={estilos.textoBotaoComprar}>Deletar</Text>
-        </TouchableOpacity>
-      </View>
+      <Modal
+        visible={modalVisivel}
+        animationType="slide"
+        transparent={false}
+        onRequestClose={() => setModalVisivel(false)}>
+        <View style={styles.modalContainer}>
+          <ScrollView contentContainerStyle={styles.containerModal}>
+            <Text style={styles.titleModal}>Adicionar Nova Camisa</Text>
+            <TextInput
+              style={styles.inputModal}
+              placeholder="Nome da Camisa"
+              value={nomeCamisa}
+              onChangeText={setNomeCamisa()}
+            />
+            <TextInput
+              style={styles.inputModal}
+              placeholder="Time"
+              value={timeCamisa}
+              onChangeText={setTimeCamisa()}
+            />
+            <TextInput
+              style={styles.inputModal}
+              placeholder="Descrição"
+              value={descricaoCamisa}
+              onChangeText={setDescricaoCamisa()}
+            />
+            <TextInput
+              style={styles.inputModal}
+              placeholder="Cor"
+              value={corCamisa}
+              onChangeText={setCorCamisa()}
+            />
+            <TextInput
+              style={styles.inputModal}
+              placeholder="Imagem"
+              value={imagemCamisa}
+              onChangeText={setImagemCamisa()}
+            />
+            <TextInput
+              style={styles.inputModal}
+              placeholder="Preço"
+              keyboardType="numeric"
+              value={precoCamisa}
+              onChangeText={setPrecoCamisa()}
+            />
+            <TextInput
+              style={styles.inputModal}
+              placeholder="Estoque"
+              value={estoqueCamisa}
+              onChangeText={setEstoqueCamisa()}
+            />
+            <Button title="Adicionar Camisa" onPress={adicionarCamisa} />
+          </ScrollView>
 
-      {/* -------------------------------------- */}
-
-
-      {/* Botões do AsyncStorage */}
-
-      <View>
-        {!listaDesejos.find(item => item.id === produtoSelecionado.id) &&
-          <TouchableOpacity style={estilos.botaoComprar} onPress={adicionarDesejo}>
-            <Text style={estilos.textoBotaoComprar}> Adicionar Lista de Desejos </Text>
-          </TouchableOpacity>}
-
-        {listaDesejos.find(item => item.id === produtoSelecionado.id) &&
-          <TouchableOpacity style={estilos.botaoRemover} onPress={removerDesejo}>
-            <Text style={estilos.textoBotaoComprar}> Remover Lista de Desejos </Text>
-          </TouchableOpacity>}
-
-      </View>
-
-      {/* -------------------------------------- */}
-
-      <TouchableOpacity style={estilos.botaoComprar} onPress={adicionarAoCarrinho}>
-        <Text style={estilos.textoBotaoComprar}> Adicionar ao Carrinho </Text>
-      </TouchableOpacity>
-
-    </ScrollView>
+          <TouchableOpacity
+            style={styles.botaoFechar}
+            onPress={() => setModalVisivel(false)}>
+            <Text style={styles.textoFechar}>❌ Fechar</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
+    </>
   )
 }
 
@@ -532,5 +605,45 @@ const estilos = StyleSheet.create({
     shadowOpacity: 0.18,
     shadowOffset: { width: 0, height: 3 },
     shadowRadius: 8,
-  }
+  },
+  containerModal: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  titleModal: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  inputModal: {
+    width: '100%',
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    marginBottom: 10,
+  },
+  modalContainer: {
+        flex: 1,
+        backgroundColor: '#fff',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    botaoFechar: {
+        position: 'absolute',
+        top: 50,
+        right: 20,
+        zIndex: 1,
+        backgroundColor: 'rgba(255, 255, 255, 0.8)',
+        padding: 10,
+        borderRadius: 20,
+    },
+    textoFechar: {
+        fontSize: 16,
+        fontWeight: "bold",
+    },
 })
