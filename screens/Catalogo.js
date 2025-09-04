@@ -245,7 +245,7 @@ const estilos = StyleSheet.create({
     backgroundColor: "#F3F7FB",
     paddingHorizontal: 16,
     paddingTop: 40,
-    paddingBottom: 20,
+    paddingBottom: 21,
   },
 
   headerCard: {
