@@ -14,8 +14,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 let db = null;
 
-const nomeBancoDados = '';
-const nomeTabelaDados = '';
+const nomeBancoDados = 'bd_camisetas.db';
+const nomeTabelaDados = 'camisetas';
 
 async function openDb() {
   if (db) return db;
