@@ -59,7 +59,7 @@ function ListaDetalhesProdutos({ route, navigation }) { //Parametros
   // Ajusta a quantidade respeitando o estoque disponível
   const alterarQuantidade = (incremento) => { // Parametro "incremento"
     const novaQuantidade = quantidade + incremento
-    // garante que quantidade fique entre 1 e estoque
+    
     if (novaQuantidade >= 1 && novaQuantidade <= (produtoSelecionado.estoque || 0)) {
       setQuantidade(novaQuantidade)
     }
@@ -67,6 +67,75 @@ function ListaDetalhesProdutos({ route, navigation }) { //Parametros
 
   // Normaliza a URI da imagem (remove espaços e evita undefined)
   const imagemUri = (produtoSelecionado.imagem || '').trim() || 'https://via.placeholder.com/400'
+
+  // --------------------- AsyncDesejos
+
+  // Função para salvar dados no AsyncStorage
+  const salvarDados = async () => {
+    try { // Tenta salvar os dados
+
+      console.log(listaDesejos)
+
+
+      // Salva a lista de desejos no AsyncStorage
+      await AsyncStorage.setItem("listaDesejos", JSON.stringify(listaDesejos));
+
+    } catch (error) { // Em caso de erro, exibe no console
+      console.error("Erro ao salvar dados:", error);
+    }
+  }
+
+  // Salva os dados quando forem alterados
+  useEffect(() => {
+
+    // Evita erros de salvamentos sem ter carregado os dados
+    if (carregado) {
+      salvarDados()
+    }
+  }, [listaDesejos, carregado])
+
+  // Adiciona um item na lista de desejo
+  const adicionarDesejo = () => {
+
+    // Tratamento para evitar bugs (não tão necessário agora)
+    if (listaDesejos.find(item => item.id === produtoSelecionado.id)) {
+      Alert.alert('Aviso', `${produtoSelecionado.nome} já está na lista de desejos.`)
+      return
+    }
+
+    // Criação da nova array com os itens passados e o novo
+    const novaLista = [...listaDesejos, produtoSelecionado]
+
+    // Definindo a nova lista
+    setListaDesejos(novaLista)
+
+    Alert.alert(
+      `Sucesso, ${apelidoUser}!`,
+      `${produtoSelecionado.nome} adicionado aos desejos!`,
+      [
+        {
+          text: 'Obrigado!',
+        },
+      ]
+    )
+  }
+
+  // Remover da lista de desejo
+  const removerDesejo = () => {
+
+    // Filtra a array, criando uma nova somente com itens diferentes do que a gente selecionou
+    setListaDesejos(listaDesejos.filter(item => item.id !== produtoSelecionado.id))
+
+    Alert.alert(
+      `Sucesso, ${apelidoUser}!`,
+      `${produtoSelecionado.nome} removido dos desejos!`,
+      [
+        {
+          text: 'Obrigado!',
+        },
+      ]
+    )
+  }
 
   return (
     // Usamos ScrollView para fazer a rolagem vertical da tela se necessário
@@ -91,7 +160,7 @@ function ListaDetalhesProdutos({ route, navigation }) { //Parametros
 
     {/* Usa o operador ternário para verificar estoque, caso nao tiver, coloca 0 */}
       <Text style={estilos.estoque}>
-        Estoque: {produtoSelecionado.estoque ? produtoSelecionado.estoque : 0} unidades 
+        Estoque: {produtoSelecionado.estoque ? produtoSelecionado.estoque : 0} unidades
       </Text>
 
     {/* Descrição do produto */}
@@ -276,8 +345,8 @@ const estilos = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: 14,
     alignItems: 'center',
-    marginTop: 10,
-    marginBottom: 60,
+    marginTop: 30,
+    marginBottom: 30,
     elevation: 4,
     shadowColor: '#6366f1',
     shadowOpacity: 0.18,
@@ -290,4 +359,17 @@ const estilos = StyleSheet.create({
     fontWeight: 'bold',
     letterSpacing: 1,
   },
+  botaoRemover: {
+    backgroundColor: '#f16363ff',
+    paddingVertical: 16,
+    borderRadius: 14,
+    alignItems: 'center',
+    marginTop: 30,
+    marginBottom: 30,
+    elevation: 4,
+    shadowColor: '#f16363ff',
+    shadowOpacity: 0.18,
+    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 8,
+  }
 })
