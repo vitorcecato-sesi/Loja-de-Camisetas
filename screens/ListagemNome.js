@@ -20,17 +20,18 @@ export default function ListagemNome() {
   useEffect(() => {
     async function setupDatabase() {
       try {
-        const database = await SQLite.openDatabaseAsync("meu_banco.db");
+        const database = await SQLite.openDatabaseAsync("bd_camisas.db");
         setDb(database);
 
-        await database.execAsync(`
-          CREATE TABLE IF NOT EXISTS funcionarios (
+        await database.execAsync(`(CREATE TABLE IF NOT EXISTS camisetas (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            imagem TEXT NOT NULL,
+            cor TEXT NOT NULL,
             nome TEXT NOT NULL,
-            salario REAL NOT NULL,
-            cargo TEXT NOT NULL
-          );
-        `);
+            preco REAL NOT NULL,
+            time TEXT NOT NULL,
+            descricao TEXT NOT NULL,
+            estoque INTEGER NOT NULL)`);
         setStatus("✅ Banco de dados e tabela prontos!");
       } catch (error) {
         console.error("Erro ao conectar ou criar tabela:", error);
@@ -155,20 +156,6 @@ const estilos = StyleSheet.create({
     justifyContent: "flex-start",
     paddingVertical: 32,
     paddingHorizontal: 16,
-  },
-
-  // Botão Voltar
-  botaoVoltar: {
-    alignSelf: "flex-start",
-    marginBottom: 12,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-  },
-  textoVoltar: {
-    fontSize: 14,
-    fontWeight: "bold",
-    color: "#000",
   },
 
   bloco: {
