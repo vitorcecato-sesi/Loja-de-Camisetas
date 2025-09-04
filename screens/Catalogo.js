@@ -27,14 +27,13 @@ export default function App() {
 
   // Inicializa o banco de dados e cria a tabela se não existir
   useEffect(() => {
-  async function setupDatabase() {
-    try {
-      const database = await SQLite.openDatabaseAsync('bd_camisas.db');
-      setDb(database);
+    async function setupDatabase() {
+      try {
+        const database = await SQLite.openDatabaseAsync('bd_camisas.db');
+        setDb(database);
 
-      database.transaction(tx => {
-        tx.executeSql(
-          `CREATE TABLE IF NOT EXISTS camisetas (
+        await database.execAsync(`
+          CREATE TABLE IF NOT EXISTS camisetas (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             imagem TEXT NOT NULL,
             cor TEXT NOT NULL,
@@ -43,26 +42,18 @@ export default function App() {
             time TEXT NOT NULL,
             descricao TEXT NOT NULL,
             estoque INTEGER NOT NULL
-          );`,
-          [],
-          () => {
-            setStatus('✅ Banco de dados e tabela prontos!');
-          },
-          (txObj, error) => {
-            console.error('Erro ao criar tabela:', error);
-            setStatus('❌ Erro ao criar tabela.');
-            return true;
-          }
-        );
-      });
-    } catch (error) {
-      console.error('Erro ao conectar ao banco de dados:', error);
-      setStatus('❌ Erro ao inicializar o banco de dados. Veja o log.');
-      Alert.alert('Erro', 'Não foi possível conectar ao banco de dados.');
+          );
+        `);
+
+        setStatus('✅ Banco de dados e tabela prontos!');
+      } catch (error) {
+        console.error('Erro ao conectar ou criar tabela:', error);
+        setStatus('❌ Erro ao inicializar o banco de dados. Veja o log.');
+        Alert.alert('Erro', 'Não foi possível conectar ao banco de dados.');
+      }
     }
-  }
-  setupDatabase();
-}, []);
+    setupDatabase();
+  }, []);
 
   // Função genérica para executar consultas
   const executarConsulta = async (query, params = []) => {
