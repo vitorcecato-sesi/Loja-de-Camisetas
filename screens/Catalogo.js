@@ -25,9 +25,11 @@ export default function Catalogo() {
   // Estado para indicar se o banco de dados e a tabela estão prontos
   const [carregado, setCarregado] = useState(false);
 
-  // useEffect para inicializar o banco de dados e criar a tabela ao montar o componente
-  useEffect(() => {
-    async function setupDatabase() {
+  // Estado para controlar a atualização do useEffect clear
+  const [clear, setClear] = useState(0);
+
+  // Função para configurar o banco de dados e criar a tabela camisetas
+  async function setupDatabase() {
       try {
         // Abre (ou cria) o banco de dados local bd_camisas.db
         const database = await SQLite.openDatabaseAsync("bd_camisas.db");
@@ -57,6 +59,9 @@ export default function Catalogo() {
         Alert.alert("Erro", "Não foi possível conectar ao banco de dados.");
       }
     }
+
+  // useEffect para inicializar o banco de dados e criar a tabela ao montar o componente
+  useEffect(() => {
     setupDatabase();
   }, []); // Executa apenas uma vez ao montar o componente
 
@@ -75,7 +80,7 @@ export default function Catalogo() {
   useEffect(() => {   // Fica atualizando para atualizar as camisas
     const timer = setTimeout(() => {
       if (db && carregado) {
-        exibirTodos();
+        exibirTodos()
       }
     }, 1000);
     return () => clearTimeout(timer);
