@@ -269,7 +269,7 @@ function ListaDetalhesProdutos({ route, navigation }) {
       setImagemCamisa('')
 
       console.log('Atualização executada: ', sql, params)
-      navigation.navigate('Catalogo')
+      navigation.goBack()
     } catch (e) {
       setErroSQLite('❌ Erro: ' + e.message)
       console.error(e)
