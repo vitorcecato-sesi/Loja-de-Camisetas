@@ -214,7 +214,7 @@ function TelaLogin({ navigation }) {
             {/* Se estiver carregando, mostra texto e spinner */}
             {carregando && (
               <>
-                <View style={{ marginVertical: 60 }}>
+                <View>
                   <Text>
                     Carregando, segura aí!
                   </Text>
