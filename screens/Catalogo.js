@@ -1,5 +1,5 @@
 import { useState, useEffect, use } from "react";
-import { StyleSheet, Text, View, FlatList, Alert, Image, TouchableOpacity, RefreshControl } from "react-native";
+import { StyleSheet, Text, View, FlatList, Alert, Image, TouchableOpacity } from "react-native";
 import * as SQLite from "expo-sqlite"; // Biblioteca para banco de dados SQLite no Expo
 import { useNavigation } from "@react-navigation/native"; // Hook para navegação entre telas
 
@@ -24,9 +24,6 @@ export default function Catalogo() {
 
   // Estado para indicar se o banco de dados e a tabela estão prontos
   const [carregado, setCarregado] = useState(false);
-
-  // Estado para controlar o indicador de atualização (refresh) da lista
-  const [refreshing, setRefreshing] = useState(false);
 
   // useEffect para inicializar o banco de dados e criar a tabela ao montar o componente
   useEffect(() => {
@@ -75,6 +72,15 @@ export default function Catalogo() {
     }
   }, [db, carregado]);
 
+  useEffect(() => {   // Fica atualizando para atualizar as camisas
+    const timer = setTimeout(() => {
+      if (db && carregado) {
+        exibirTodos();
+      }
+    }, 1000);
+    return () => clearTimeout(timer);
+  })
+
   // Função genérica para executar consultas SQL e atualizar os resultados
   const executarConsulta = async (query, params = []) => {
     if (!db) {
@@ -108,14 +114,7 @@ export default function Catalogo() {
     await executarConsulta("SELECT * FROM camisetas;");
   };
 
-  // Função para o refresh control
-  const onRefresh = () => {
-    setRefreshing(true);
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 1500);
-  };
-
+  
   // Função para abrir a tela de detalhes da camisa selecionada
   const abrirDetalhesCamisa = (camisa) => {
     // Normaliza os dados do produto para evitar erros
@@ -175,15 +174,6 @@ export default function Catalogo() {
         data={results} // Dados da lista
         renderItem={renderItem} // Função para renderizar cada item
         keyExtractor={(item) => item.id.toString()} // Chave única para cada item
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            colors={["#6366f1"]}
-            tintColor="#6366f1"
-            title="Atualizando catálogo..."
-          />
-        }
         ListEmptyComponent={
           <Text style={estilos.emptyText}>Nenhuma camisa encontrada.</Text>
         } // Texto exibido se a lista estiver vazia
