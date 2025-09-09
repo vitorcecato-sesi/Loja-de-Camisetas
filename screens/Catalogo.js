@@ -13,24 +13,21 @@ export default function Catalogo() {
   // Estado para armazenar os resultados das consultas SQL (lista de camisetas)
   const [results, setResults] = useState([]);
 
-  // Estado para armazenar o texto digitado no campo de pesquisa por nome
-  const [searchText, setSearchText] = useState("");
-
-  // Estado para armazenar o texto digitado no campo de pesquisa por cor
-  const [searchCor, setSearchCor] = useState("");
-
   // Estado para mostrar mensagens de status da aplicação (ex: banco pronto, erros)
   const [status, setStatus] = useState("Inicializando...");
 
   // Estado para indicar se o banco de dados e a tabela estão prontos
   const [carregado, setCarregado] = useState(false);
 
-  // Estado para controlar a atualização do useEffect clear
-  const [clear, setClear] = useState(0);
-
   // Função para configurar o banco de dados e criar a tabela camisetas
   async function setupDatabase() {
       try {
+
+        if (db) {
+          // Se o banco já estiver configurado, não faz nada
+          return;
+        }
+
         // Abre (ou cria) o banco de dados local bd_camisas.db
         const database = await SQLite.openDatabaseAsync("bd_camisas.db");
         setDb(database); // Salva a conexão no estado
