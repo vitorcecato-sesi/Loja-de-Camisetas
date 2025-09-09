@@ -1,20 +1,9 @@
-import React, { useState, useEffect, use } from "react";
-import {
-  StyleSheet,
-  Text,
-  View,
-  TextInput,
-  Button,
-  FlatList,
-  Alert,
-  Image,
-  TouchableOpacity,
-  RefreshControl,
-} from "react-native";
+import { useState, useEffect, use } from "react";
+import { StyleSheet, Text, View, FlatList, Alert, Image, TouchableOpacity, RefreshControl } from "react-native";
 import * as SQLite from "expo-sqlite"; // Biblioteca para banco de dados SQLite no Expo
 import { useNavigation } from "@react-navigation/native"; // Hook para navegação entre telas
 
-export default function App() {
+export default function Catalogo() {
   // Obtém o objeto navigation para navegação entre telas
   const navigation = useNavigation();
 
@@ -33,7 +22,10 @@ export default function App() {
   // Estado para mostrar mensagens de status da aplicação (ex: banco pronto, erros)
   const [status, setStatus] = useState("Inicializando...");
 
+  // Estado para indicar se o banco de dados e a tabela estão prontos
   const [carregado, setCarregado] = useState(false);
+
+  // Estado para controlar o indicador de atualização (refresh) da lista
   const [refreshing, setRefreshing] = useState(false);
 
   // useEffect para inicializar o banco de dados e criar a tabela ao montar o componente
@@ -71,23 +63,17 @@ export default function App() {
     setupDatabase();
   }, []); // Executa apenas uma vez ao montar o componente
 
-  const onRefresh = () => {
-    setRefreshing(true);
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 2000);
-  };
-
+  // Loga o status sempre que ele mudar
   useEffect(() => {
-    setRefreshing(true);
-  }, [])
+    console.log(status);
+  }, [status]);
 
+  // Função para lidar com a atualização e geração de itens do banco de dados
   useEffect(() => {
-    if (!refreshing) {
+    if (db && carregado) {
       exibirTodos();
     }
-  }, [refreshing]);
-
+  }, [db, carregado]);
 
   // Função genérica para executar consultas SQL e atualizar os resultados
   const executarConsulta = async (query, params = []) => {
@@ -115,29 +101,19 @@ export default function App() {
 
   // Função para exibir todas as camisetas cadastradas
   const exibirTodos = async () => {
+    if (!db) {
+      Alert.alert("Erro", "O banco de dados não está pronto.");
+      return;
+    }
     await executarConsulta("SELECT * FROM camisetas;");
   };
 
-  // Função para pesquisar camisetas pelo nome (LIKE %searchText%)
-  const pesquisarNome = async () => {
-    if (!searchText.trim()) {
-      Alert.alert("Aviso", "Digite um nome para pesquisar.");
-      return;
-    }
-    await executarConsulta("SELECT * FROM camisetas WHERE nome LIKE ?;", [
-      `%${searchText}%`, // É necessário usar % para o operador LIKE que é o método dentro do SQLite
-    ]);
-  };
-
-  // Função para pesquisar camisetas pela cor (LIKE %searchCor%)
-  const pesquisarCor = () => {
-    if (!searchCor.trim()) {
-      Alert.alert("Aviso", "Digite uma cor para pesquisar.");
-      return;
-    }
-    executarConsulta("SELECT * FROM camisetas WHERE cor LIKE ?;", [
-      `%${searchCor}%`, // É necessário usar % para o operador LIKE que é o método dentro do SQLite
-    ]);
+  // Função para o refresh control
+  const onRefresh = () => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 1500);
   };
 
   // Função para abrir a tela de detalhes da camisa selecionada
@@ -180,8 +156,8 @@ export default function App() {
   const statusColor = status.startsWith("✅")
     ? estilos.colors.success
     : status.startsWith("❌")
-      ? estilos.colors.error
-      : estilos.colors.info;
+    ? estilos.colors.error
+    : estilos.colors.info;
 
   return (
     <View style={estilos.container}>
@@ -193,67 +169,25 @@ export default function App() {
         </Text>
       </View>
 
-      {/* Área de pesquisa */}
-      <View style={estilos.searchCard}>
-        {/* Input para pesquisar por nome */}
-        <TextInput
-          style={estilos.input}
-          placeholder="Nome"
-          placeholderTextColor="#9AA4B2"
-          value={searchText}
-          onChangeText={setSearchText}
-        />
-
-        {/* Input para pesquisar por cor */}
-        <TextInput
-          style={estilos.input}
-          placeholder="Cor"
-          placeholderTextColor="#9AA4B2"
-          value={searchCor}
-          onChangeText={setSearchCor}
-        />
-
-        {/* Botões para executar as ações de pesquisa e exibição */}
-        <View style={estilos.buttonContainer}>
-          <View style={estilos.btnWrapper}>
-            <Button title="Exibir Todos" onPress={exibirTodos} disabled={!db} />
-          </View>
-          <View style={estilos.btnWrapper}>
-            <Button
-              title="Pesquisar Nome"
-              onPress={pesquisarNome}
-              disabled={!db}
-            />
-          </View>
-          <View style={estilos.btnWrapper}>
-            <Button
-              title="Pesquisar Cor"
-              onPress={pesquisarCor}
-              disabled={!db}
-            />
-          </View>
-        </View>
-      </View>
-
-      {/* Lista de camisetas exibidas */}
-      {refreshing && <RefreshControl
-        refreshing={refreshing}
-        onRefresh={onRefresh}
-        colors={['#6366f1']}
-        tintColor="#6366f1"
-        title="Atualizando catálogo..."
-      />}
-      
-      {!refreshing && <FlatList
+      <FlatList
         style={estilos.list}
         contentContainerStyle={estilos.listContent}
         data={results} // Dados da lista
         renderItem={renderItem} // Função para renderizar cada item
         keyExtractor={(item) => item.id.toString()} // Chave única para cada item
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={["#6366f1"]}
+            tintColor="#6366f1"
+            title="Atualizando catálogo..."
+          />
+        }
         ListEmptyComponent={
           <Text style={estilos.emptyText}>Nenhuma camisa encontrada.</Text>
         } // Texto exibido se a lista estiver vazia
-      />}
+      />
     </View>
   );
 }
