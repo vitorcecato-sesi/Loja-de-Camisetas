@@ -3,8 +3,10 @@ import { StyleSheet, Text, View, TouchableOpacity, Modal, ScrollView, TextInput,
 import * as SQLite from 'expo-sqlite';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+// Variável para armazenar a conexão com o banco de dados
 let db = null;
 
+// Função para abrir o banco de dados SQLite
 async function openDb() {
   if (db) return db;
   db = await SQLite.openDatabaseAsync('bd_camisas.db');
@@ -13,14 +15,20 @@ async function openDb() {
 
 
 export default function Menu({ navigation }) {
+  
+  // Nome da tabela onde os dados serão armazenados
   const nomeTabelaDados = 'camisetas';
 
-
+  // Estado para armazenar o nome do usuário
   const [nomeUser, setNomeUser] = useState('');
+
+  // Estado para controlar o refresh
   const [refreshing, setRefreshing] = useState(false);
 
+  // Estado para controlar a visibilidade do modal
   const [modalVisivel, setModalVisivel] = useState(false);
 
+  // Estados para armazenar os dados da nova camisa
   const [nome, setNome] = useState('');
   const [preco, setPreco] = useState('');
   const [imagem, setImagem] = useState('');
@@ -29,10 +37,12 @@ export default function Menu({ navigation }) {
   const [time, setTime] = useState('');
   const [cor, setCor] = useState('');
 
+  // Função para adicionar uma nova camisa ao banco de dados
   const adicionarCamisa = async () => {
     const PrecoConvertido = Number(preco)
     const EstoqueConvertido = Number(estoque)
 
+    // Validação dos campos
     if (
       !nome.trim() ||
       PrecoConvertido == 0 ||
@@ -47,6 +57,7 @@ export default function Menu({ navigation }) {
       return;
     }
 
+    // Insere os dados no banco de dados
     try {
       const conn = await openDb();
       await conn.runAsync(
@@ -54,6 +65,7 @@ export default function Menu({ navigation }) {
         [nome, PrecoConvertido, imagem, descricao, EstoqueConvertido, time, cor]
       );
 
+      // Exibe uma mensagem de sucesso e fecha o modal
       Alert.alert('Sucesso', 'Camisa adicionada com sucesso! 🚀');
       setNome('');
       setCor('');
@@ -98,18 +110,22 @@ export default function Menu({ navigation }) {
     carregarDados();
   }, [refreshing]);
 
+  // Funções de navegação
   const listarTudo = async () => {
     navigation.navigate('Catalogo');
   };
 
+  // Função para abrir o modal de inserção de camisas
   const inserirCamisas = () => {
     setModalVisivel(true)
   };
 
+  // Função para navegar para a tela de listagem por nome
   const listarNome = async () => {
     navigation.navigate('ListagemNome');
   };
 
+  // Função para navegar para a tela de listagem por cor
   const listarCor = async () => {
     navigation.navigate('ListagemCor');
   };
