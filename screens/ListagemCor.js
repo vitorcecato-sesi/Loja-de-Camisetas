@@ -1,9 +1,9 @@
-import { useState, useEffect, use } from "react";
-import { StyleSheet, Text, View, FlatList, Alert, Image, TouchableOpacity } from "react-native";
+import { useState, useEffect } from "react";
+import { StyleSheet, Text, View, TextInput, Button, FlatList, Alert, Image, TouchableOpacity } from "react-native";
 import * as SQLite from "expo-sqlite"; // Biblioteca para banco de dados SQLite no Expo
 import { useNavigation } from "@react-navigation/native"; // Hook para navegação entre telas
 
-export default function Catalogo() {
+export default function App() {
   // Obtém o objeto navigation para navegação entre telas
   const navigation = useNavigation();
 
@@ -13,21 +13,17 @@ export default function Catalogo() {
   // Estado para armazenar os resultados das consultas SQL (lista de camisetas)
   const [results, setResults] = useState([]);
 
+
+  // Estado para armazenar o texto digitado no campo de pesquisa por cor
+  const [searchCor, setSearchCor] = useState("");
+
   // Estado para mostrar mensagens de status da aplicação (ex: banco pronto, erros)
   const [status, setStatus] = useState("Inicializando...");
 
-  // Estado para indicar se o banco de dados e a tabela estão prontos
-  const [carregado, setCarregado] = useState(false);
-
-  // Função para configurar o banco de dados e criar a tabela camisetas
-  async function setupDatabase() {
+  // useEffect para inicializar o banco de dados e criar a tabela ao montar o componente
+  useEffect(() => {
+    async function setupDatabase() {
       try {
-
-        if (db) {
-          // Se o banco já estiver configurado, não faz nada
-          return;
-        }
-
         // Abre (ou cria) o banco de dados local bd_camisas.db
         const database = await SQLite.openDatabaseAsync("bd_camisas.db");
         setDb(database); // Salva a conexão no estado
@@ -48,7 +44,6 @@ export default function Catalogo() {
 
         // Atualiza o status para indicar sucesso
         setStatus("✅ Banco de dados e tabela prontos!");
-        setCarregado(true);
       } catch (error) {
         // Em caso de erro, loga no console e mostra alerta para o usuário
         console.error("Erro ao conectar ou criar tabela:", error);
@@ -56,32 +51,8 @@ export default function Catalogo() {
         Alert.alert("Erro", "Não foi possível conectar ao banco de dados.");
       }
     }
-
-  // useEffect para inicializar o banco de dados e criar a tabela ao montar o componente
-  useEffect(() => {
     setupDatabase();
   }, []); // Executa apenas uma vez ao montar o componente
-
-  // Loga o status sempre que ele mudar
-  useEffect(() => {
-    console.log(status);
-  }, [status]);
-
-  // Função para lidar com a atualização e geração de itens do banco de dados
-  useEffect(() => {
-    if (db && carregado) {
-      exibirTodos();
-    }
-  }, [db, carregado]);
-
-  useEffect(() => {   // Fica atualizando para atualizar as camisas
-    const timer = setTimeout(() => {
-      if (db && carregado) {
-        exibirTodos()
-      }
-    }, 1000);
-    return () => clearTimeout(timer);
-  })
 
   // Função genérica para executar consultas SQL e atualizar os resultados
   const executarConsulta = async (query, params = []) => {
@@ -107,16 +78,17 @@ export default function Catalogo() {
     }
   };
 
-  // Função para exibir todas as camisetas cadastradas
-  const exibirTodos = async () => {
-    if (!db) {
-      Alert.alert("Erro", "O banco de dados não está pronto.");
+  // Função para pesquisar camisetas pela cor (LIKE %searchCor%)
+  const pesquisarCor = () => {
+    if (!searchCor.trim()) {
+      Alert.alert("Aviso", "Digite uma cor para pesquisar.");
       return;
     }
-    await executarConsulta("SELECT * FROM camisetas;");
+    executarConsulta("SELECT * FROM camisetas WHERE cor LIKE ?;", [
+      `%${searchCor}%`, // É necessário usar % para o operador LIKE que é o método dentro do SQLite
+    ]);
   };
 
-  
   // Função para abrir a tela de detalhes da camisa selecionada
   const abrirDetalhesCamisa = (camisa) => {
     // Normaliza os dados do produto para evitar erros
@@ -170,6 +142,30 @@ export default function Catalogo() {
         </Text>
       </View>
 
+      {/* Área de pesquisa */}
+      <View style={estilos.searchCard}>
+        {/* Input para pesquisar por cor */}
+        <TextInput
+          style={estilos.input}
+          placeholder="Cor"
+          placeholderTextColor="#9AA4B2"
+          value={searchCor}
+          onChangeText={setSearchCor}
+        />
+
+        {/* Botões para executar as ações de pesquisa e exibição */}
+        <View style={estilos.buttonContainer}>
+          <View style={estilos.btnWrapper}>
+            <Button
+              title="Pesquisar Cor"
+              onPress={pesquisarCor}
+              disabled={!db}
+            />
+          </View>
+        </View>
+      </View>
+
+      {/* Lista de camisetas exibidas */}
       <FlatList
         style={estilos.list}
         contentContainerStyle={estilos.listContent}

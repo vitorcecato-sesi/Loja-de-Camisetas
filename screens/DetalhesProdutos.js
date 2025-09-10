@@ -9,21 +9,19 @@ import {
   StyleSheet,
   Alert,
   ScrollView,
+  Modal,
+  TextInput, Button,
 } from 'react-native'
 
-/*
-  ListaDetalhesProdutos:
-  - Esta tela recebe, via rota, um objeto chamado `produtoSelecionado`.
-  - Mostra a imagem grande, nome, preço, descrição, tamanhos, controle de quantidade
-    e um botão para "Adicionar ao Carrinho" (Apenas demonstração, não funcional).
-*/
+import * as SQLite from 'expo-sqlite'  // Importação para a utilização do SQLite
 
-function ListaDetalhesProdutos({ route, navigation }) { //Parametros
-  // route.params vem do navigation.navigate(..., { produtoSelecionado: ... })
+// Importação para a utilização do storage
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-  const { produtoSelecionado } = route.params || {} // usamos || {} para evitar erro caso params seja undefined.
 
-  // Quantidade selecionada de camisetas para colocar no carrinho pelo usuário (estado local)
+function ListaDetalhesProdutos({ route, navigation }) {
+
+  const { produtoSelecionado } = route.params || {}
   const [quantidade, setQuantidade] = useState(1)
 
   // useEffect: roda quando a tela monta. Se não houver produto, avisa e volta.
@@ -37,35 +35,92 @@ function ListaDetalhesProdutos({ route, navigation }) { //Parametros
   }, [produtoSelecionado]) // Caso o produtoSelecionado mudar, o useEffect será chamado novamente
 
   // Se não houver produto (fizemos goBack no useEffect), não renderizamos nada
+  const [apelidoUser, setApelidoUser] = useState("")
+
+  // Lista de Desejos
+  const [listaDesejos, setListaDesejos] = useState([])
+  
+  // Controle de carregamento de dados 
+  const [carregado, setCarregando] = useState(false)
+
+  // Função para carregar dados do AsyncStorage
+  const carregarDados = async () => {
+    try {  // Tenta carregar os dados
+
+      // Armazena o apelido do usuário
+      const apelido = await AsyncStorage.getItem('apelido')
+
+      // Armazena a informação do localStorage
+      const listaDesejosString = await AsyncStorage.getItem('listaDesejos')
+
+      // Se o apelido existir, atualiza o estado, senão exibe um alerta e define como "Anônimo"
+      if (apelido !== null) {
+        setApelidoUser(apelido)
+        console.log(apelido)
+      }
+      else {
+        Alert.alert("Erro", "Nome não encontrado.")
+        setApelidoUser("Anonimo")
+      }
+
+      if (listaDesejosString) {
+        setListaDesejos(() => JSON.parse(listaDesejosString))
+
+      } else {
+        Alert.alert("Erro", "Lista de desejos está vazia.")
+      }
+
+      setCarregando(true)
+
+    } catch (e) { // Em caso de erro em buscar, exibe um alerta e o erro no console
+      Alert.alert("Erro", 'Erro ao carregar dados.')
+      console.error(e)
+    }
+  }
+
+  // Faz a busca de dados quando iniciar
+  useEffect(() => {
+    carregarDados()
+  }, [])
+
+
+  useEffect(() => {
+    if (!produtoSelecionado) {
+      Alert.alert('Erro', 'Produto não encontrado', [
+
+        { text: 'Voltar', onPress: () => navigation.goBack() },
+      ])
+    }
+  }, [produtoSelecionado])
+
   if (!produtoSelecionado) {
     return null
   }
 
-  // Função chamada ao pressionar "Adicionar ao Carrinho"
-  // Aqui só mostramos um alerta de confirmação e voltamos para a lista.
   const adicionarAoCarrinho = () => {
     Alert.alert(
       'Sucesso!',
       `${quantidade} ${produtoSelecionado.nome} adicionado(s) ao carrinho!`,
       [
         {
-          text: 'Continuar Comprando', // Texto do botão
-          onPress: () => navigation.goBack(), // Quando cliclado, faz o goBack(), que volta para página anterior (Catalogo)
+          text: 'Continuar Comprando',
+          onPress: () => navigation.goBack(),
         },
       ]
     )
   }
 
-  // Ajusta a quantidade respeitando o estoque disponível
-  const alterarQuantidade = (incremento) => { // Parametro "incremento"
+
+  // Altera a quantidade das camisas
+  const alterarQuantidade = (incremento) => {
     const novaQuantidade = quantidade + incremento
-    
+
     if (novaQuantidade >= 1 && novaQuantidade <= (produtoSelecionado.estoque || 0)) {
       setQuantidade(novaQuantidade)
     }
   }
 
-  // Normaliza a URI da imagem (remove espaços e evita undefined)
+
   const imagemUri = (produtoSelecionado.imagem || '').trim() || 'https://via.placeholder.com/400'
 
   // --------------------- AsyncDesejos
@@ -137,67 +192,275 @@ function ListaDetalhesProdutos({ route, navigation }) { //Parametros
     )
   }
 
+  // --------------------- SQLite
+
+  const idCamisa = (produtoSelecionado.id || '')
+  const [erroSQLite, setErroSQLite] = useState('')
+
+  const nomeBancoDados = 'bd_camisas.db'
+  const nomeTabelaDados = 'camisetas'
+
+
+  // UPDATE
+
+  const [nomeCamisa, setNomeCamisa] = useState('')
+  const [precoCamisa, setPrecoCamisa] = useState('')
+  const [descricaoCamisa, setDescricaoCamisa] = useState('')
+  const [estoqueCamisa, setEstoqueCamisa] = useState('')
+  const [corCamisa, setCorCamisa] = useState('')
+  const [timeCamisa, setTimeCamisa] = useState('')
+  const [imagemCamisa, setImagemCamisa] = useState('')
+
+
+  const atualizarCamisa = async () => {
+    try {
+      const numId = Number(idCamisa);
+      if (!numId) return setErroSQLite('⚠️ Informe um ID válido para atualizar.');
+
+      const db = await SQLite.openDatabaseAsync(nomeBancoDados);
+
+      const sets = []   // Array para armazenar os campos a serem atualizados
+      const params = [] // Array para armazenar os valores correspondentes
+
+
+      if (nomeCamisa) {
+        sets.push('nome = ?')
+        params.push(nomeCamisa)
+      }
+
+      if (precoCamisa) {
+        sets.push('preco = ?')
+        params.push(Number(precoCamisa))
+      }
+
+      if (descricaoCamisa) {
+        sets.push('descricao = ?')
+        params.push(descricaoCamisa)
+      }
+
+      if (estoqueCamisa) {
+        sets.push('estoque = ?')
+        params.push(estoqueCamisa)
+      }
+
+      if (corCamisa) {
+        sets.push('cor = ?')
+        params.push(corCamisa)
+      }
+
+      if (timeCamisa) {
+        sets.push('time = ?')
+        params.push(timeCamisa)
+      }
+
+
+      if (sets.length === 0) return setErroSQLite('⚠️ Informe ao menos um campo (nome/preço/descrição/estoque/cor).');
+
+      params.push(numId)
+
+      // Monta o comando que sera executado
+      const sql = `UPDATE ${nomeTabelaDados} SET ${sets.join(', ')} WHERE id = ?;`
+      // sets.join serve para juntar os campos com vírgula. Ex: nome = NomeNovo, preco = PreçoNovo, descricao = DescriçãoNova
+
+      // Executa a query
+      await db.runAsync(sql, params)
+      // params serve para passar os valores que vão substituir os ? na query
+
+      setErroSQLite('✅ Atualização executada para ID ' + numId)
+      setModalVisivel(false)
+      setNomeCamisa('')
+      setPrecoCamisa('')
+      setDescricaoCamisa('')
+      setEstoqueCamisa('')
+      setCorCamisa('')
+      setTimeCamisa('')
+      setImagemCamisa('')
+
+      console.log('Atualização executada: ', sql, params)
+      navigation.goBack()
+    } catch (e) {
+      setErroSQLite('❌ Erro: ' + e.message)
+      console.error(e)
+    }
+  }
+
+  // DELETE
+
+  const deletarCamisa = async () => {
+    try {
+      const numId = Number(idCamisa);
+      if (!numId) return console.log('⚠️ Informe um ID válido para deletar.');
+
+      const db = await SQLite.openDatabaseAsync(nomeBancoDados);
+
+      await db.runAsync(`DELETE FROM ${nomeTabelaDados} WHERE id = ${numId};`);
+
+      setErroSQLite('🗑️ Deletado (se existia) o ID ' + numId);
+      console.log('Deletado (se existia) o ID ' + numId);
+      navigation.goBack();
+    } catch (e) {
+      setErroSQLite('❌ Erro: ' + e.message);
+      console.error(e);
+    }
+  };
+
   return (
-    // Usamos ScrollView para fazer a rolagem vertical da tela se necessário
-    <ScrollView style={estilos.container}>
 
-      {/* Botão de voltar simples */}
-      <TouchableOpacity style={estilos.botaoVoltar} onPress={() => navigation.goBack()}> {/* Utiliza o goBack() para voltar a página anterior */}
-        <Text style={estilos.textoVoltar}> Voltar </Text>
-      </TouchableOpacity>
+    <>
+      <ScrollView style={estilos.container}>
 
-      {/* Imagem grande do produto */}
-      <Image source={{ uri: imagemUri }} style={estilos.imagemGrande} />
 
-      {/* Nome, preço e outras infos - Utiliza o produtoSelecionado vindo da rota */}
-      {/* Nome do produto */}
-      <Text style={estilos.nomeProduto}> {produtoSelecionado.nome} </Text>
+        <TouchableOpacity style={estilos.botaoVoltar} onPress={() => navigation.goBack()}>
+          <Text style={estilos.textoVoltar}> Voltar </Text>
+        </TouchableOpacity>
 
-      {/* Preço do produto, deixa o preço ou 0 se nao houver, e sempre com 2 casas decimais no máximo */}
-      <Text style={estilos.precoProduto}>
-        R$ {(produtoSelecionado.preco || 0).toFixed(2)}
-      </Text>
+        <Text style={{ textAlign: 'center', fontWeight: 'bold', fontSize: 15, color: '#3300ffff' }} >Bem vindo(a), {apelidoUser}</Text>
 
+        <Image source={{ uri: imagemUri }} style={estilos.imagemGrande} />
+
+
+        <Text style={estilos.nomeProduto}> {produtoSelecionado.nome} </Text>
+
+
+        <Text style={estilos.precoProduto}>
+          R$ {(produtoSelecionado.preco || 0).toFixed(2)}
+        </Text>
+        
     {/* Usa o operador ternário para verificar estoque, caso nao tiver, coloca 0 */}
+
       <Text style={estilos.estoque}>
         Estoque: {produtoSelecionado.estoque ? produtoSelecionado.estoque : 0} unidades
       </Text>
 
-    {/* Descrição do produto */}
-      <Text style={estilos.descricaoProduto}> {produtoSelecionado.descricao} </Text>
 
-      {/* Tags de tamanhos — componente visual para mostrar opções */}
-      <View style={estilos.tamanhosContainer}>
-        {['P', 'M', 'G', 'XG'].map((tamanho) => ( // Percorre o array de tamanhos e cria uma "tag" para cada um
+        <Text style={estilos.descricaoProduto}> {produtoSelecionado.descricao} </Text>
 
-          <View key={tamanho} style={estilos.tagTamanho}>
-            <Text style={estilos.textoTagTamanho}> {tamanho} </Text>
-          </View>
-        ))}
-      </View>
 
-      {/* Controle de quantidade: - / número / + */}
-      <View style={estilos.selectorQuantidade}>
-        {/* Botão de (-) diminuir 1 quantidade */}
-        <TouchableOpacity style={estilos.botaoQuantidade} onPress={() => alterarQuantidade(-1)}>
-          <Text style={estilos.textoQuantidade}> - </Text>
+        <View style={estilos.tamanhosContainer}>
+          {['P', 'M', 'G', 'XG'].map((tamanho) => (
+
+            <View key={tamanho} style={estilos.tagTamanho}>
+              <Text style={estilos.textoTagTamanho}> {tamanho} </Text>
+            </View>
+          ))}
+        </View>
+
+
+        <View style={estilos.selectorQuantidade}>
+
+          <TouchableOpacity style={estilos.botaoQuantidade} onPress={() => alterarQuantidade(-1)}>
+            <Text style={estilos.textoQuantidade}> - </Text>
+          </TouchableOpacity>
+
+
+          <Text style={estilos.numeroQuantidade}> {quantidade} </Text>
+
+
+          <TouchableOpacity style={estilos.botaoQuantidade} onPress={() => alterarQuantidade(1)}>
+            <Text style={estilos.textoQuantidade}> + </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Botões do SQLite */}
+
+        <View>
+          <TouchableOpacity style={{ ...estilos.botaoComprar, backgroundColor: '#76fc68' }} onPress={() => { setModalVisivel(true) }}>
+            <Text style={estilos.textoBotaoComprar}>Atualizar</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={{ ...estilos.botaoComprar, backgroundColor: '#f53838' }} onPress={() => { deletarCamisa() }}>
+            <Text style={estilos.textoBotaoComprar}>Deletar</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* -------------------------------------- */}
+
+
+        {/* Botões do AsyncStorage */}
+
+        <View>
+          {!listaDesejos.find(item => item.id === produtoSelecionado.id) &&
+            <TouchableOpacity style={estilos.botaoComprar} onPress={adicionarDesejo}>
+              <Text style={estilos.textoBotaoComprar}> Adicionar Lista de Desejos </Text>
+            </TouchableOpacity>}
+
+          {listaDesejos.find(item => item.id === produtoSelecionado.id) &&
+            <TouchableOpacity style={estilos.botaoRemover} onPress={removerDesejo}>
+              <Text style={estilos.textoBotaoComprar}> Remover Lista de Desejos </Text>
+            </TouchableOpacity>}
+
+        </View>
+
+        {/* -------------------------------------- */}
+
+        <TouchableOpacity style={estilos.botaoComprar} onPress={adicionarAoCarrinho}>
+          <Text style={estilos.textoBotaoComprar}> Adicionar ao Carrinho </Text>
         </TouchableOpacity>
 
-        {/* Quantidade atual de produtos */}
-        <Text style={estilos.numeroQuantidade}> {quantidade} </Text>
+      </ScrollView>
 
-        {/* Botão de (+) aumentar 1 quantidade */}
-        <TouchableOpacity style={estilos.botaoQuantidade} onPress={() => alterarQuantidade(1)}>
-          <Text style={estilos.textoQuantidade}> + </Text>
-        </TouchableOpacity>
-      </View>
+      <Modal
+        visible={modalVisivel}
+        animationType="slide"
+        transparent={false}
+        onRequestClose={() => setModalVisivel(false)}>
+        <View style={estilos.modalContainer}>
+          <ScrollView contentContainerStyle={estilos.containerModal}>
+            <Text style={estilos.titleModal}>Atualizar Dados da Camisa</Text>
+            <TextInput
+              style={estilos.inputModal}
+              placeholder="Nome da Camisa"
+              value={nomeCamisa}
+              onChangeText={setNomeCamisa}
+            />
+            <TextInput
+              style={estilos.inputModal}
+              placeholder="Time"
+              value={timeCamisa}
+              onChangeText={setTimeCamisa}
+            />
+            <TextInput
+              style={estilos.inputModal}
+              placeholder="Descrição"
+              value={descricaoCamisa}
+              onChangeText={setDescricaoCamisa}
+            />
+            <TextInput
+              style={estilos.inputModal}
+              placeholder="Cor"
+              value={corCamisa}
+              onChangeText={setCorCamisa}
+            />
+            <TextInput
+              style={estilos.inputModal}
+              placeholder="Imagem"
+              value={imagemCamisa}
+              onChangeText={setImagemCamisa}
+            />
+            <TextInput
+              style={estilos.inputModal}
+              placeholder="Preço"
+              keyboardType="numeric"
+              value={precoCamisa}
+              onChangeText={setPrecoCamisa}
+            />
+            <TextInput
+              style={estilos.inputModal}
+              placeholder="Estoque"
+              value={estoqueCamisa}
+              onChangeText={setEstoqueCamisa}
+            />
+            <Button title="Atualizar" onPress={() => atualizarCamisa()} />
+          </ScrollView>
 
-      {/* Botão principal para adicionar ao carrinho */}
-      <TouchableOpacity style={estilos.botaoComprar} onPress={adicionarAoCarrinho}>
-        <Text style={estilos.textoBotaoComprar}> Adicionar ao Carrinho </Text>
-      </TouchableOpacity>
-
-    </ScrollView>
+          <TouchableOpacity
+            style={estilos.botaoFechar}
+            onPress={() => setModalVisivel(false)}>
+            <Text style={estilos.textoFechar}>❌ Fechar</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
+    </>
   )
 }
 
@@ -371,5 +634,45 @@ const estilos = StyleSheet.create({
     shadowOpacity: 0.18,
     shadowOffset: { width: 0, height: 3 },
     shadowRadius: 8,
-  }
+  },
+  containerModal: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  titleModal: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  inputModal: {
+    width: '100%',
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    marginBottom: 10,
+  },
+  modalContainer: {
+        flex: 1,
+        backgroundColor: '#fff',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    botaoFechar: {
+        position: 'absolute',
+        top: 50,
+        right: 20,
+        zIndex: 1,
+        backgroundColor: 'rgba(255, 255, 255, 0.8)',
+        padding: 10,
+        borderRadius: 20,
+    },
+    textoFechar: {
+        fontSize: 16,
+        fontWeight: "bold",
+    },
 })
