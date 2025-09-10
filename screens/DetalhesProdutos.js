@@ -437,6 +437,7 @@ function ListaDetalhesProdutos({ route, navigation }) {
             <TextInput
               style={estilos.inputModal}
               placeholder="Estoque"
+              keyboardType="numeric"
               value={estoqueCamisa}
               onChangeText={setEstoqueCamisa}
             />
