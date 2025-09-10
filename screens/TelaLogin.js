@@ -1,15 +1,5 @@
-import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-  ScrollView,
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform
-} from "react-native";
+import { useState, useEffect } from "react";
+import { View, Text, TouchableOpacity, StyleSheet, Alert, ScrollView, ActivityIndicator, KeyboardAvoidingView, Platform } from "react-native";
 
 /* Importação para a utilização do storage */
 import AsyncStorage from '@react-native-async-storage/async-storage'
@@ -27,11 +17,24 @@ function TelaLogin({ navigation }) {
   const [erro, setErro] = useState("");
   const [carregando, setCarregando] = useState(false);
 
+
+  // Configuração inicial do banco de dados SQLite
   useEffect(() => {
+
+    // Função para criar a tabela e inserir dados iniciais
     async function setupDatabase() {
       try {
         const db = await SQLite.openDatabaseAsync('bd_camisas.db');
 
+        // Apaga a tabela se já existir (útil para desenvolvimento; remova em produção)
+        await db.execAsync('DROP TABLE IF EXISTS camisetas;')
+        console.log("Tabela 'camisetas' apagada (se existia).")
+
+        // Reorganiza o banco de dados
+        await db.execAsync('VACUUM;')
+        console.log("Banco de dados reorganizado com VACUUM.")
+
+        // Cria a tabela camisetas se não existir
         await db.execAsync(`
           CREATE TABLE IF NOT EXISTS camisetas (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -43,9 +46,10 @@ function TelaLogin({ navigation }) {
             descricao TEXT NOT NULL,
             estoque INTEGER NOT NULL
           );
-        `);
+        `)
         console.log("Tabela 'camisetas' verificada/criada com sucesso.");
 
+        // Dados iniciais para a tabela
         const camisas = [
           { nome: 'Camisa Mirassol', preco: 249.99, imagem: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgy05GWcIrMmRYRd5DceIE1FcuRdxpa4vVPWmFnrhOoLC7wpQknIsPeKUp2lO9ILOlrmBtNAKrmjsHPidyOzKdmkT0zVTpELm_wPk3V4U1y9adLRGVdhFHiOmBebsIFCFR2tZhdjt0lUSTP/s1600/Mirassol+2020+1.png', descricao: 'Camisa do Mirassol: amarela vibrante com detalhes verdes e o leão no escudo destacando a identidade do clube', estoque: 15, time: 'Mirassol', cor: 'amarelo, verde' },
           { nome: 'Camisa Palmeiras', preco: 499.99, imagem: 'https://www.mundodofutebol.com.br/lojas/00057707/prod/palmeiraawe.png', descricao: 'Camisa do Palmeiras: verde tradicional com detalhes brancos e o escudo alviverde simbolizando tradição e glórias', estoque: 8, time: 'Palmeiras', cor: 'verde, branco' },
@@ -59,7 +63,10 @@ function TelaLogin({ navigation }) {
           { nome: 'Flamengo', preco: 499.99, imagem: 'https://www.camarotedotorcedor.com.br/wp-content/uploads/2025/03/m_0115_00100724113_1_2.png', descricao: ' Camisa do Flamengo: vermelha e preta com listras horizontais, destacando o escudo rubro-negro e a paixão da torcida carioca.', estoque: 8, time: 'Flamengo', cor: 'vemelho, preto' },
         ];
 
+        // Verifica se a tabela está vazia
         const result = await db.getFirstAsync('SELECT COUNT(*) as count FROM camisetas');
+        // getFirst retorna apenas o primeiro resultado
+
         if (result.count === 0) {
           console.log('Tabela "camisetas" está vazia. Inserindo dados iniciais...');
           await db.withTransactionAsync(async () => {
@@ -214,7 +221,7 @@ function TelaLogin({ navigation }) {
             {/* Se estiver carregando, mostra texto e spinner */}
             {carregando && (
               <>
-                <View style={{ marginVertical: 60 }}>
+                <View>
                   <Text>
                     Carregando, segura aí!
                   </Text>

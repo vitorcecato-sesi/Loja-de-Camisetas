@@ -10,7 +10,10 @@ import {
   Alert,
   ScrollView,
   Modal,
+  TextInput, Button,
 } from 'react-native'
+
+import * as SQLite from 'expo-sqlite'  // Importação para a utilização do SQLite
 
 // Importação para a utilização do storage
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -264,8 +267,20 @@ function ListaDetalhesProdutos({ route, navigation }) {
       // params serve para passar os valores que vão substituir os ? na query
 
       setErroSQLite('✅ Atualização executada para ID ' + numId)
+      setModalVisivel(false)
+      setNomeCamisa('')
+      setPrecoCamisa('')
+      setDescricaoCamisa('')
+      setEstoqueCamisa('')
+      setCorCamisa('')
+      setTimeCamisa('')
+      setImagemCamisa('')
+
+      console.log('Atualização executada: ', sql, params)
+      navigation.goBack()
     } catch (e) {
       setErroSQLite('❌ Erro: ' + e.message)
+      console.error(e)
     }
   }
 
@@ -274,14 +289,18 @@ function ListaDetalhesProdutos({ route, navigation }) {
   const deletarCamisa = async () => {
     try {
       const numId = Number(idCamisa);
-      if (!numId) return setErroSQLite('⚠️ Informe um ID válido para deletar.');
+      if (!numId) return console.log('⚠️ Informe um ID válido para deletar.');
 
       const db = await SQLite.openDatabaseAsync(nomeBancoDados);
 
-      await db.runAsync(`DELETE FROM ${nomeTabelaDados} WHERE id = ?;`, [numId]);
+      await db.runAsync(`DELETE FROM ${nomeTabelaDados} WHERE id = ${numId};`);
+
       setErroSQLite('🗑️ Deletado (se existia) o ID ' + numId);
+      console.log('Deletado (se existia) o ID ' + numId);
+      navigation.goBack();
     } catch (e) {
       setErroSQLite('❌ Erro: ' + e.message);
+      console.error(e);
     }
   };
 
@@ -385,59 +404,59 @@ function ListaDetalhesProdutos({ route, navigation }) {
         animationType="slide"
         transparent={false}
         onRequestClose={() => setModalVisivel(false)}>
-        <View style={styles.modalContainer}>
-          <ScrollView contentContainerStyle={styles.containerModal}>
-            <Text style={styles.titleModal}>Adicionar Nova Camisa</Text>
+        <View style={estilos.modalContainer}>
+          <ScrollView contentContainerStyle={estilos.containerModal}>
+            <Text style={estilos.titleModal}>Atualizar Dados da Camisa</Text>
             <TextInput
-              style={styles.inputModal}
+              style={estilos.inputModal}
               placeholder="Nome da Camisa"
               value={nomeCamisa}
-              onChangeText={setNomeCamisa()}
+              onChangeText={setNomeCamisa}
             />
             <TextInput
-              style={styles.inputModal}
+              style={estilos.inputModal}
               placeholder="Time"
               value={timeCamisa}
-              onChangeText={setTimeCamisa()}
+              onChangeText={setTimeCamisa}
             />
             <TextInput
-              style={styles.inputModal}
+              style={estilos.inputModal}
               placeholder="Descrição"
               value={descricaoCamisa}
-              onChangeText={setDescricaoCamisa()}
+              onChangeText={setDescricaoCamisa}
             />
             <TextInput
-              style={styles.inputModal}
+              style={estilos.inputModal}
               placeholder="Cor"
               value={corCamisa}
-              onChangeText={setCorCamisa()}
+              onChangeText={setCorCamisa}
             />
             <TextInput
-              style={styles.inputModal}
+              style={estilos.inputModal}
               placeholder="Imagem"
               value={imagemCamisa}
-              onChangeText={setImagemCamisa()}
+              onChangeText={setImagemCamisa}
             />
             <TextInput
-              style={styles.inputModal}
+              style={estilos.inputModal}
               placeholder="Preço"
               keyboardType="numeric"
               value={precoCamisa}
-              onChangeText={setPrecoCamisa()}
+              onChangeText={setPrecoCamisa}
             />
             <TextInput
-              style={styles.inputModal}
+              style={estilos.inputModal}
               placeholder="Estoque"
               value={estoqueCamisa}
-              onChangeText={setEstoqueCamisa()}
+              onChangeText={setEstoqueCamisa}
             />
-            <Button title="Adicionar Camisa" onPress={() => atualizarCamisa()} />
+            <Button title="Atualizar" onPress={() => atualizarCamisa()} />
           </ScrollView>
 
           <TouchableOpacity
-            style={styles.botaoFechar}
+            style={estilos.botaoFechar}
             onPress={() => setModalVisivel(false)}>
-            <Text style={styles.textoFechar}>❌ Fechar</Text>
+            <Text style={estilos.textoFechar}>❌ Fechar</Text>
           </TouchableOpacity>
         </View>
       </Modal>

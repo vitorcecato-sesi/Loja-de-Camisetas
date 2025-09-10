@@ -43,20 +43,21 @@ export default function ListagemNome() {
     setupDatabase();
   }, []); // O array vazio garante que isso rode apenas na primeira renderização
 
-  // Função genérica para executar consultas SQL
+  // --- Função para executar consultas SQL ---
   const executarConsulta = async (query, params = []) => {
- // Verifica se o banco está pronto
+
+    // Verifica se o banco de dados está pronto
     if (!db) {
       Alert.alert("Erro", "O banco de dados não está pronto.");
       return;
     }
 
     try {
-        // Executa consulta e retorna todas as linhas
+      // Executa a consulta SQL com os parâmetros fornecidos
       const rows = await db.getAllAsync(query, params);
-       // Salva resultados no estado
+      
+      // Atualiza o estado com os resultados
       setResultados(rows);
-      // Se não houver resultados, mostra aviso
       if (rows.length === 0) {
         Alert.alert("Aviso", "Nenhum resultado encontrado.");
       }
@@ -67,7 +68,7 @@ export default function ListagemNome() {
     }
   };
 
-  // Função específica para pesquisar camisetas pelo nome
+  // --- Função para pesquisar por nome ---
   const pesquisarNome = async () => {
     // Verifica se o campo está vazio
     if (!nomeCamisa.trim()) {

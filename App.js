@@ -3,8 +3,8 @@ import { NavigationContainer } from '@react-navigation/native'; /* é um "contai
 import { createNativeStackNavigator } from '@react-navigation/native-stack'; /* ele cria uma "pilha" de telas (Stack) para navegar entre elas. */
 
 /* Imports das telas do App */
-import TelaListaDeCamisas from './screens/Catalogo';
-import ListaDetalhesProdutos from './screens/DetalhesProdutos';
+import Catalogo from './screens/Catalogo';
+import DetalhesProdutos from './screens/DetalhesProdutos';
 import TelaLogin from './screens/TelaLogin';
 import ListaDesejos from './screens/ListaDesejos';
 import Menu from './screens/Menu';
@@ -27,13 +27,13 @@ export default function App() {
 
                 <Stack.Screen
                     name="Catalogo"                   
-                    component={TelaListaDeCamisas}    
+                    component={Catalogo}    
                     options={{ title: 'Catálogo' }}
                 />
 
                 <Stack.Screen
                     name="DetalhesCamisas"                
-                    component={ListaDetalhesProdutos}     
+                    component={DetalhesProdutos}     
                     options={{ title: 'Detalhes do Produto' }}
                 />
 
@@ -57,7 +57,7 @@ export default function App() {
 
                 <Stack.Screen 
                     name='ListagemCor'
-                    component={ListagemNome}
+                    component={ListagemCor}
                     options={{ title: 'ListagemCor' }}
                 />
 
