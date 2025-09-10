@@ -1,13 +1,5 @@
-import React, { useState, useEffect } from "react";
-import {
-  StyleSheet,
-  Text,
-  View,
-  TextInput,
-  TouchableOpacity,
-  FlatList,
-  Alert,
-} from "react-native";
+import { useState, useEffect } from "react";
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, FlatList, Alert } from "react-native";
 import * as SQLite from "expo-sqlite";
 
 export default function ListagemNome() {
@@ -51,15 +43,22 @@ export default function ListagemNome() {
     setupDatabase();
   }, []); // O array vazio garante que isso rode apenas na primeira renderização
 
+  // --- Função para executar consultas SQL ---
   const executarConsulta = async (query, params = []) => {
+
+    // Verifica se o banco de dados está pronto
     if (!db) {
       Alert.alert("Erro", "O banco de dados não está pronto.");
       return;
     }
 
     try {
+      // Executa a consulta SQL com os parâmetros fornecidos
       const rows = await db.getAllAsync(query, params);
+      
+      // Atualiza o estado com os resultados
       setResultados(rows);
+      
       if (rows.length === 0) {
         Alert.alert("Aviso", "Nenhum resultado encontrado.");
       }
@@ -69,6 +68,7 @@ export default function ListagemNome() {
     }
   };
 
+  // --- Função para pesquisar por nome ---
   const pesquisarNome = async () => {
     if (!nomeCamisa.trim()) {
       Alert.alert("Aviso", "Digite um nome para pesquisar.");
@@ -79,6 +79,7 @@ export default function ListagemNome() {
     ]);
   };
 
+  // --- Renderização de cada item na lista ---
   const renderItem = ({ item }) => (
     <View style={estilos.itemLista}>
       <Text style={estilos.textoItem}>{item.nome}</Text>
